@@ -100,8 +100,8 @@
 			<releases />
 			<snapshots />
 			<id>astrotaverna</id>
-			<name>AstroTaverna repository</name>
-			<url>http://wf4ever.github.com/astrotaverna/</url>
+			<name>Alpha AstroTaverna repository</name>
+			<url>http://julian-garrido.github.com/astrotaverna/</url>
 		</repository>
 	</repositories>
 
@@ -117,14 +117,14 @@
 	<distributionManagement>
 		<repository>
 			<id>astrotaverna</id>
-			<name>AstroTaverna repository</name>
-            <url>file:///${user.home}/src/astrotaverna-gh/</url>
+			<name>Alpha AstroTaverna repository</name>
+            <url>file:///${user.home}/src/alpha_astrotaverna/astrotaverna-gh/</url>
             <!-- <url>file:///${user.home}/git/repository/astrotaverna-gh/</url> -->
 		</repository>
 		<snapshotRepository>
 			<id>astrotaverna</id>
-			<name>AstroTaverna repository</name>
-            <url>file:///${user.home}/src/astrotaverna-gh/</url>
+			<name>Alpha AstroTaverna repository</name>
+            <url>file:///${user.home}/src/alpha_astrotaverna/astrotaverna-gh/</url>
             <!-- <url>file:///${user.home}/git/repository/astrotaverna-gh/</url> -->
 		</snapshotRepository>
 	</distributionManagement>
@@ -149,9 +149,12 @@
     <module>query-activity-ui</module>
   </modules>
   <scm>
-  	<url>https://github.com/wf4ever/astrotaverna</url>
-  	<connection>scm:git:git://github.com/wf4ever/astrotaverna.git</connection>
-  	<developerConnection>scm:git:git@github.com:wf4ever/astrotaverna.git</developerConnection>
+  	<!-- <url>https://github.com/wf4ever/astrotaverna</url> -->
+  	<url>https://github.com/julian-garrido/astrotaverna.git</url>
+  	<!-- <connection>scm:git:git://github.com/wf4ever/astrotaverna.git</connection> --> 
+  	<connection>scm:git:git://github.com/julian-garrido/astrotaverna.git</connection>
+  	<!-- <developerConnection>scm:git:git@github.com:wf4ever/astrotaverna.git</developerConnection> -->
+  	<developerConnection>scm:git:git@github.com:julian-garrido/astrotaverna.git</developerConnection>
   </scm>
   <issueManagement>
   	<system>github</system>
