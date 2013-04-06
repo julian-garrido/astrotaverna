@@ -67,5 +67,8 @@
 			<artifactId>query-activity-ui</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+ 
+		
+	
 	</dependencies>
 </project>

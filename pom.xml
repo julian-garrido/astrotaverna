@@ -103,6 +103,11 @@
 			<name>Alpha AstroTaverna repository</name>
 			<url>http://julian-garrido.github.com/astrotaverna/</url>
 		</repository>
+		<repository>
+			<id>vamdc-repository</id>
+			<name>VAMDC Repository</name>
+			<url>http://vamdc.mssl.ucl.ac.uk/vamdc_repository</url>
+		</repository>
 	</repositories>
 
 	<pluginRepositories>
