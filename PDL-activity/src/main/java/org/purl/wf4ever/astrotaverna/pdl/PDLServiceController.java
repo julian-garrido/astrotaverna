@@ -52,9 +52,9 @@ public class PDLServiceController {
 	private Service service;
 	private GroupProcessor gp;
 	
-	private HashMap<String, SingleParameter> hashParameters;
-	private HashMap<String, SingleParameter> hashInputParameters;
-	private HashMap<String, SingleParameter> hashOutputParameters;
+	private HashMap<String, SingleParameter> hashParameters= new HashMap<String, SingleParameter>();
+	private HashMap<String, SingleParameter> hashInputParameters = new HashMap<String, SingleParameter>();
+	private HashMap<String, SingleParameter> hashOutputParameters = new HashMap<String, SingleParameter>();
 	private HashMap<String, String> restrictionsOnGroups;
 	private String serviceDescription;
 	
@@ -420,6 +420,7 @@ public class PDLServiceController {
 							//String value = (String) referenceService.renderIdentifier(inputs.get(param.getName()), 
 							//		String.class, context);
 							String value = (String) inputValuesMap.get(param.getName());
+							//System.out.println(param.getName() + ", "+value+" ( "+ param.getParameterType().toString());
 							// put every input in the Mapper
 							List<GeneralParameter> generalParamList = new ArrayList<GeneralParameter>();
 							GeneralParameter gparam = new GeneralParameter(value, 

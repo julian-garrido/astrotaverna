@@ -1,36 +1,43 @@
-package org.purl.wf4ever.astrotaverna.tjoin.ui.config;
+package org.purl.wf4ever.astrotaverna.image.ui.config;
 
 import java.awt.GridLayout;
+import java.net.URI;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-
-import org.purl.wf4ever.astrotaverna.voutils.AddCommonRowToVOTableActivity;
-import org.purl.wf4ever.astrotaverna.voutils.AddCommonRowToVOTableActivityConfigurationBean;
-
+import javax.swing.JTextField;
+import javax.swing.SpinnerModel;
+import javax.swing.SpinnerNumberModel;
 
 import net.sf.taverna.t2.workbench.ui.views.contextualviews.activity.ActivityConfigurationPanel;
+import net.sf.taverna.t2.workflowmodel.processor.activity.ActivityConfigurationException;
 
 
+import javax.swing.JSpinner;
+
+import org.purl.wf4ever.astrotaverna.aladin.AladinMacroActivity;
+import org.purl.wf4ever.astrotaverna.aladin.AladinMacroActivityConfigurationBean;
 
 @SuppressWarnings("serial")
-public class AddCommonRowToVOTableConfigurationPanel
+public class AladinMacroConfigurationPanel
 		extends
-		ActivityConfigurationPanel<AddCommonRowToVOTableActivity, 
-        AddCommonRowToVOTableActivityConfigurationBean> {
+		ActivityConfigurationPanel<AladinMacroActivity, 
+        AladinMacroActivityConfigurationBean> {
 
-	private AddCommonRowToVOTableActivity activity;
-	private AddCommonRowToVOTableActivityConfigurationBean configBean;
+	private AladinMacroActivity activity;
+	private AladinMacroActivityConfigurationBean configBean;
 	
 	String[] inputTypesStrings = {"File", "URL", "String"};
-	String[] commonRowPositionStrings = {"Left", "Right"};
+	String[] ModeTypesStrings = {"nogui", "gui"};
+	//String[] filterTypesStrings = {"Column names", "UCDs"};
 	
 	private JComboBox  typeOfInput;
-	private JComboBox commonRowPosition;
+	private JComboBox  typeOfMode;
+	//private JComboBox typeOfFilter;
 
 
-	public AddCommonRowToVOTableConfigurationPanel(AddCommonRowToVOTableActivity activity) {
+	public AladinMacroConfigurationPanel(AladinMacroActivity activity) {
 		this.activity = activity;
 		initGui();
 	}
@@ -47,12 +54,19 @@ public class AddCommonRowToVOTableConfigurationPanel
 		labelString.setLabelFor(typeOfInput);
 		typeOfInput.setSelectedIndex(1);
 		
-		labelString = new JLabel("Common row position:");
+		labelString = new JLabel("Mode:");
 		add(labelString);
-		commonRowPosition = new JComboBox(commonRowPositionStrings);
-		add(commonRowPosition);
-		labelString.setLabelFor(commonRowPosition);
-		commonRowPosition.setSelectedIndex(1);
+		typeOfMode = new JComboBox(ModeTypesStrings);
+		add(typeOfMode);
+		labelString.setLabelFor(typeOfMode);
+		typeOfInput.setSelectedIndex(1);
+		
+		//labelString = new JLabel("Filter type:");
+		//add(labelString);
+		//typeOfFilter = new JComboBox(filterTypesStrings);
+		//add(typeOfFilter);
+		//labelString.setLabelFor(typeOfFilter);
+		//typeOfFilter.setSelectedIndex(1);
 
 			
 		// Populate fields from activity configuration bean
@@ -77,12 +91,21 @@ public class AddCommonRowToVOTableConfigurationPanel
 			
 		}
 		
-		String  tfilter = (String)commonRowPosition.getSelectedItem();
-		if(!(      tfilter.compareTo("Left")==0
-				|| tfilter.compareTo("Right")==0)){
+		tinput = (String)typeOfMode.getSelectedItem();
+		if(!(      tinput.compareTo("nogui")==0
+				|| tinput.compareTo("gui")==0)){
+			//"Invalid input type
+
+			errorMessage = "Valid modes: nogui or gui.";
 			
-			errorMessage = "Invalid position: Left or Right";
 		}
+		
+		//String  tfilter = (String)typeOfFilter.getSelectedItem();
+		//if(!(      tfilter.compareTo("Column names")==0
+		//		|| tfilter.compareTo("UCDs")==0)){
+		//	//"Invalid filter type
+		//	errorMessage = "Valid filters: 'Column names' or 'UCDs'.";
+		//}
 		
 		
 		if (errorMessage!=null){
@@ -100,7 +123,7 @@ public class AddCommonRowToVOTableConfigurationPanel
 	 * noteConfiguration() was called.
 	 */
 	@Override
-	public AddCommonRowToVOTableActivityConfigurationBean getConfiguration() {
+	public AladinMacroActivityConfigurationBean getConfiguration() {
 		// Should already have been made by noteConfiguration()
 		return configBean;
 	}
@@ -111,11 +134,12 @@ public class AddCommonRowToVOTableConfigurationPanel
 	@Override
 	public boolean isConfigurationChanged() {
 		String originalTypeOfInput = configBean.getTypeOfInput();
-		String originalPosition = configBean.getCommonRowPosition();
+		String originalTypeOfMode = configBean.getTypeOfMode();
+		//String originalTypeOfFilter = configBean.getTypeOfFilter();
 		// true (changed) unless all fields match the originals
 		
-		return ! (originalTypeOfInput.compareTo((String)typeOfInput.getSelectedItem())==0
-				&& originalPosition.compareTo((String)commonRowPosition.getSelectedItem())==0 );
+		return ! (originalTypeOfInput.equals((String)typeOfInput.getSelectedItem())
+				&& originalTypeOfMode.equals((String)typeOfMode.getSelectedItem()) );
 	}
 
 	/**
@@ -124,12 +148,12 @@ public class AddCommonRowToVOTableConfigurationPanel
 	 */
 	@Override
 	public void noteConfiguration(){
-		configBean = new AddCommonRowToVOTableActivityConfigurationBean();
+		configBean = new AladinMacroActivityConfigurationBean();
 		
 		// FIXME: Update bean fields from your UI elements
 		configBean.setTypeOfInput((String)typeOfInput.getSelectedItem());
-		configBean.setCommonRowPosition((String)commonRowPosition.getSelectedItem());
-		
+		//configBean.setTypeOfFilter((String)typeOfFilter.getSelectedItem());
+		configBean.setTypeOfMode((String)typeOfMode.getSelectedItem());
 	}
 
 	/**
@@ -142,7 +166,7 @@ public class AddCommonRowToVOTableConfigurationPanel
 		
 		// FIXME: Update UI elements from your bean fields
 		typeOfInput.setSelectedItem(configBean.getTypeOfInput());
-		commonRowPosition.setSelectedItem(configBean.getCommonRowPosition());
+		//typeOfFilter.setSelectedItem(configBean.getTypeOfFilter());
 
 	}
 }

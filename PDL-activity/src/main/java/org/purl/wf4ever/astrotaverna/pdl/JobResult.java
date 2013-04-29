@@ -22,8 +22,8 @@ public class JobResult {
 	String jobPhase="unknown";
 	String demandDate;
 	
-	HashMap<String, String> inputParams;
-	HashMap<String, String> outputParams;
+	HashMap<String, String> inputParams= new HashMap<String, String>();
+	HashMap<String, String> outputParams= new HashMap<String, String>();
 	
 	public void parseXML(String xml) throws ParserConfigurationException, SAXException, IOException, IOException{
 		
@@ -86,7 +86,7 @@ public class JobResult {
         			String name = nameList.item(0).getTextContent();
         			NodeList valueList = paramElement.getElementsByTagName("Value");
         			String value = valueList.item(0).getTextContent();   			
-        			this.inputParams.put(name, value);
+        			this.outputParams.put(name, value);
         		}
         	}
         }	

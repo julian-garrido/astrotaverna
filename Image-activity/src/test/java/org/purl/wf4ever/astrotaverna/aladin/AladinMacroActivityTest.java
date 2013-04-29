@@ -21,16 +21,18 @@ import org.junit.Test;
  * @author julian Garrido 
  * Some tests may fail because the resulting votable name comes from a random number 
  */
-public class AladinScriptActivityTest {
+public class AladinMacroActivityTest {
 
-	private AladinScriptActivityConfigurationBean configBean;
+	private AladinMacroActivityConfigurationBean configBean;
 	
-	private static final String FIRST_INPUT = "Script";
+	private static final String FIRST_INPUT = "script";
+	private static final String SECOND_INPUT = "parameters";
+
 	private static final String OUT_STD_OUTPUT = "STD_OUTPUT";
 	private static final String OUT_ERROR = "ERROR_OUTPUT";
 	private static final String VO_TABLE = "VOTable";
 	
-	private AladinScriptActivity activity = new AladinScriptActivity();
+	private AladinMacroActivity activity = new AladinMacroActivity();
 
 	
 	@Ignore("Not ready to run")
@@ -48,7 +50,7 @@ public class AladinScriptActivityTest {
 	//this method is invoked before each test method
 	@Before
 	public void makeConfigBean() throws Exception {
-		configBean = new AladinScriptActivityConfigurationBean();	
+		configBean = new AladinMacroActivityConfigurationBean();	
 		configBean.setTypeOfInput("File");
 		configBean.setTypeOfMode("nogui");
 		
@@ -56,7 +58,7 @@ public class AladinScriptActivityTest {
 
 	@Test(expected = ActivityConfigurationException.class)
 	public void invalidConfiguration() throws ActivityConfigurationException {
-		AladinScriptActivityConfigurationBean invalidBean = new AladinScriptActivityConfigurationBean();
+		AladinMacroActivityConfigurationBean invalidBean = new AladinMacroActivityConfigurationBean();
 		invalidBean.setTypeOfInput("another thing");
 		// Should throw ActivityConfigurationException
 		activity.configure(invalidBean);
@@ -64,7 +66,7 @@ public class AladinScriptActivityTest {
 	
 	@Test(expected = ActivityConfigurationException.class)
 	public void invalidConfiguration2() throws ActivityConfigurationException {
-		AladinScriptActivityConfigurationBean invalidBean = new AladinScriptActivityConfigurationBean();
+		AladinMacroActivityConfigurationBean invalidBean = new AladinMacroActivityConfigurationBean();
 		invalidBean.setTypeOfInput("vFile");
 		// Should throw ActivityConfigurationException
 		activity.configure(invalidBean);
@@ -74,21 +76,115 @@ public class AladinScriptActivityTest {
 	
 	
 	//It is based in local files
+	//this test fails because the process that runs the script calls System.exit(1). I doesn't understand
+	//this method fails and not the executeInvoker(). is this a thread issue?
+	//TODO
 	@Ignore
 	@Test
 	public void executeAsynch() throws Exception {
+		configBean.setTypeOfInput("File");
+		configBean.setTypeOfMode("nogui");
+		activity.configure(configBean);
+
+		Map<String, Object> inputs = new HashMap<String, Object>();
+		
+		//inputs.put(FIRST_INPUT, "file:///Users/julian/src/astrotaverna/Image-activity/src/test/resources/Aladin_workflow_script.ajs");
+		//inputs.put(SECOND_INPUT, "file:///Users/julian/src/astrotaverna/Image-activity/src/test/resources/Aladin_workflow_params.txt");
+		inputs.put(FIRST_INPUT, "/Users/julian/src/astrotaverna/Image-activity/src/test/resources/Aladin_workflow_script.ajs");
+		inputs.put(SECOND_INPUT, "/Users/julian/src/astrotaverna/Image-activity/src/test/resources/Aladin_workflow_params.txt");
+		
+		Map<String, Class<?>> expectedOutputTypes = new HashMap<String, Class<?>>();
+		//expectedOutputTypes.put("simpleOutput", String.class);
+		//expectedOutputTypes.put("moreOutputs", String.class);
+		expectedOutputTypes.put(OUT_STD_OUTPUT, String.class);
+		expectedOutputTypes.put(OUT_ERROR, String.class);
+		expectedOutputTypes.put(VO_TABLE, String.class);
+		Map<String, Object> outputs = new HashMap<String, Object>();
+		try{
+			outputs = ActivityInvoker.invokeAsyncActivity(
+					activity, inputs, expectedOutputTypes);
+		}catch(SecurityException ex){
+			System.out.println("ERRORRR- invoking the activity at the test.");
+		}
+
+		assertEquals("Unexpected outputs", outputs.size(), 3);
+		assertEquals("", outputs.get(OUT_STD_OUTPUT));
+		assertEquals("", outputs.get(OUT_ERROR));
+		
+		//assertEquals(Arrays.asList("Value 1", "Value 2"), outputs
+		//		.get("moreOutputs"));
+
+	}
+
+	//The process returns internaly 1 in a System.exit(), but it doesn't fail
+	@Ignore
+	@Test
+	public void executeInvoker() throws Exception {
+		
+		AladinInvoker invoker = new AladinInvoker ();
+		try{
+			invoker.runMacro("/Users/julian/src/astrotaverna/Image-activity/src/test/resources/Aladin_workflow_script.ajs", "/Users/julian/src/astrotaverna/Image-activity/src/test/resources/Aladin_workflow_params.txt", "nogui");
+		}catch(SecurityException ex){
+			System.out.println("ERRORRR- invoking the activity at the test.");
+		}
+
+		//assertEquals(Arrays.asList("Value 1", "Value 2"), outputs
+		//		.get("moreOutputs"));
+
+	}
+	
+	//It is based in local files
+	//This test should finish without any error
+	@Ignore
+	@Test
+	public void executeAsynch_with_simple_script() throws Exception {
+		configBean.setTypeOfInput("File");
+		configBean.setTypeOfMode("nogui");
+		activity.configure(configBean);
+
+		Map<String, Object> inputs = new HashMap<String, Object>();
+
+		inputs.put(FIRST_INPUT, "/Users/julian/src/astrotaverna/Image-activity/src/test/resources/Aladin_workflow_script_short.ajs");
+		inputs.put(SECOND_INPUT, "/Users/julian/src/astrotaverna/Image-activity/src/test/resources/Aladin_workflow_params.txt");
+		
+		Map<String, Class<?>> expectedOutputTypes = new HashMap<String, Class<?>>();
+		//expectedOutputTypes.put("simpleOutput", String.class);
+		//expectedOutputTypes.put("moreOutputs", String.class);
+		expectedOutputTypes.put(OUT_STD_OUTPUT, String.class);
+		expectedOutputTypes.put(OUT_ERROR, String.class);
+		expectedOutputTypes.put(VO_TABLE, String.class);
+		Map<String, Object> outputs = new HashMap<String, Object>();
+		try{
+			outputs = ActivityInvoker.invokeAsyncActivity(
+					activity, inputs, expectedOutputTypes);
+		}catch(SecurityException ex){
+			System.out.println("ERRORRR- invoking the activity at the test.");
+		}
+
+		assertEquals("Unexpected outputs", outputs.size(), 3);
+		assertEquals("", outputs.get(OUT_STD_OUTPUT));
+		assertEquals("", outputs.get(OUT_ERROR));
+		
+		//assertEquals(Arrays.asList("Value 1", "Value 2"), outputs
+		//		.get("moreOutputs"));
+
+	}
+	
+	//based on lacal files (on ubuntu)
+	@Ignore
+	@Test
+	public void executeAsynchOnUbuntu() throws Exception {
 		configBean.setTypeOfInput("URL");
 		configBean.setTypeOfMode("nogui");
 		activity.configure(configBean);
 
 		Map<String, Object> inputs = new HashMap<String, Object>();
-		inputs.put(FIRST_INPUT, "file:///Users/julian/workspaces/aladinTest_ws/myAladin/myTestSRC/iaa/amiga/aladin/resources/examplescript.ajs");
-
-
+		
+		inputs.put(FIRST_INPUT, "file:///home/julian/Documentos/wf4ever/aladin/Aladin_workflow_script.ajs");
+		inputs.put(SECOND_INPUT, "file:///home/julian/Documentos/wf4ever/aladin/Aladin_workflow_params.txt");
 		
 		Map<String, Class<?>> expectedOutputTypes = new HashMap<String, Class<?>>();
-		//expectedOutputTypes.put("simpleOutput", String.class);
-		//expectedOutputTypes.put("moreOutputs", String.class);
+
 		expectedOutputTypes.put(OUT_STD_OUTPUT, String.class);
 		expectedOutputTypes.put(OUT_ERROR, String.class);
 		expectedOutputTypes.put(VO_TABLE, String.class);
@@ -105,87 +201,7 @@ public class AladinScriptActivityTest {
 
 	}
 
-	//It is based in local files
-	@Ignore
-	@Test
-	public void executeAsynchWithStrings() throws Exception {
-		configBean.setTypeOfInput("String");
-		configBean.setTypeOfMode("nogui");
-		activity.configure(configBean);
-
-		Map<String, Object> inputs = new HashMap<String, Object>();
-		inputs.put(FIRST_INPUT, "get aladin(J,FITS) m1 ;\n save /Users/julian/Documents/wf4ever/aladin/exampleTests/m1.jpg; quit");
-		
-
-		Map<String, Class<?>> expectedOutputTypes = new HashMap<String, Class<?>>();
-		//expectedOutputTypes.put("simpleOutput", String.class);
-		//expectedOutputTypes.put("moreOutputs", String.class);
-		expectedOutputTypes.put(OUT_STD_OUTPUT, String.class);
-		expectedOutputTypes.put(OUT_ERROR, String.class);
-
-		Map<String, Object> outputs = ActivityInvoker.invokeAsyncActivity(
-				activity, inputs, expectedOutputTypes);
-
-		assertEquals("Unexpected outputs", 2, outputs.size());
-		assertEquals("", outputs.get(OUT_STD_OUTPUT));
-		assertEquals("", outputs.get(OUT_ERROR));
-		
-	}
 	
-	//It is based in local files (ubuntu)
-	@Ignore
-	@Test
-	public void executeAsynchWithStringsInUbuntu() throws Exception {
-		configBean.setTypeOfInput("String");
-		configBean.setTypeOfMode("nogui");
-		activity.configure(configBean);
-
-		Map<String, Object> inputs = new HashMap<String, Object>();
-		inputs.put(FIRST_INPUT, "get aladin(J,FITS) m1 ;\n save /home/julian/Documentos/wf4ever/aladin/m1_.jpg; quit");
-		
-
-		Map<String, Class<?>> expectedOutputTypes = new HashMap<String, Class<?>>();
-		//expectedOutputTypes.put("simpleOutput", String.class);
-		//expectedOutputTypes.put("moreOutputs", String.class);
-		expectedOutputTypes.put(OUT_STD_OUTPUT, String.class);
-		expectedOutputTypes.put(OUT_ERROR, String.class);
-
-		Map<String, Object> outputs = ActivityInvoker.invokeAsyncActivity(
-				activity, inputs, expectedOutputTypes);
-
-		assertEquals("Unexpected outputs", 2, outputs.size());
-		assertEquals("", outputs.get(OUT_STD_OUTPUT));
-		assertEquals("", outputs.get(OUT_ERROR));
-		
-	}
-	
-	
-	//It is based in local files
-	@Ignore
-	@Test
-	public void executeAsynchWithStringsAndNonExistingGalaxy() throws Exception {
-		configBean.setTypeOfInput("String");
-		configBean.setTypeOfMode("nogui");
-		activity.configure(configBean);
-
-		Map<String, Object> inputs = new HashMap<String, Object>();
-		inputs.put(FIRST_INPUT, "get aladin(J,FITS) thisgalaxaydoesnotexist ;\n save /Users/julian/Documents/wf4ever/aladin/exampleTests/m1.jpg; quit");
-
-		Map<String, Class<?>> expectedOutputTypes = new HashMap<String, Class<?>>();
-		//expectedOutputTypes.put("simpleOutput", String.class);
-		//expectedOutputTypes.put("moreOutputs", String.class);
-		expectedOutputTypes.put(OUT_STD_OUTPUT, String.class);
-		expectedOutputTypes.put(OUT_ERROR, String.class);
-
-		Map<String, Object> outputs = ActivityInvoker.invokeAsyncActivity(
-				activity, inputs, expectedOutputTypes);
-
-		assertEquals("Unexpected outputs", 2, outputs.size());
-		//assertTrue(!((String)outputs.get(OUT_STD_OUTPUT)).isEmpty());
-		assertTrue(!((String)outputs.get(OUT_ERROR)).isEmpty());
-		
-		
-	}
 	
 
 	
@@ -201,14 +217,14 @@ public class AladinScriptActivityTest {
 		//for (ActivityInputPort activ : activity.getInputPorts()){
 		//	System.out.print(activ.getName()+", ");
 		//}
-		assertEquals("Unexpected inputs", 1, activity.getInputPorts().size());
+		assertEquals("Unexpected inputs", 2, activity.getInputPorts().size());
 		assertEquals("Unexpected outputs", 3, activity.getOutputPorts().size());
 	
 		
 		
 		activity.configure(configBean);
 		// Should not change on reconfigure
-		assertEquals("Unexpected inputs", 1, activity.getInputPorts().size());
+		assertEquals("Unexpected inputs", 2, activity.getInputPorts().size());
 		assertEquals("Unexpected outputs", 3, activity.getOutputPorts().size());
 	}
 

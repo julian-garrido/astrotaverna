@@ -1,4 +1,4 @@
-package org.purl.wf4ever.astrotaverna.pdl.ui.serviceprovider;
+package org.purl.wf4ever.astrotaverna.image.ui.serviceprovider;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -6,23 +6,22 @@ import java.util.List;
 
 import javax.swing.Icon;
 
+import org.purl.wf4ever.astrotaverna.aladin.AladinMacroActivity;
+import org.purl.wf4ever.astrotaverna.aladin.AladinMacroActivityConfigurationBean;
 
 import net.sf.taverna.t2.servicedescriptions.ServiceDescription;
 import net.sf.taverna.t2.workflowmodel.processor.activity.Activity;
 
-import org.purl.wf4ever.astrotaverna.pdl.PDLServiceActivity;
-import org.purl.wf4ever.astrotaverna.pdl.PDLServiceActivityConfigurationBean;
-import org.purl.wf4ever.astrotaverna.pdl.ui.serviceprovider.PDLServiceIcon;
 
-public class PDLService_ServiceDesc extends ServiceDescription<PDLServiceActivityConfigurationBean> {
+public class AladinMacroServiceDesc extends ServiceDescription<AladinMacroActivityConfigurationBean> {
 
 	/**
 	 * The subclass of Activity which should be instantiated when adding a service
 	 * for this description 
 	 */
 	@Override
-	public Class<? extends Activity<PDLServiceActivityConfigurationBean>> getActivityClass() {
-		return PDLServiceActivity.class;
+	public Class<? extends Activity<AladinMacroActivityConfigurationBean>> getActivityClass() {
+		return AladinMacroActivity.class;
 	} 
 
 	/**
@@ -32,9 +31,11 @@ public class PDLService_ServiceDesc extends ServiceDescription<PDLServiceActivit
 	 * 
 	 */
 	@Override
-	public PDLServiceActivityConfigurationBean getActivityConfiguration() {
-		PDLServiceActivityConfigurationBean bean = new PDLServiceActivityConfigurationBean();
-		bean.setPdlDescriptionFile("http://www.exampleuri.com/pdldescriptionfile.xml");
+	public AladinMacroActivityConfigurationBean getActivityConfiguration() {
+		AladinMacroActivityConfigurationBean bean = new AladinMacroActivityConfigurationBean();
+		bean.setTypeOfInput("String");
+		bean.setTypeOfMode("nogui");
+		//bean.setTypeOfFilter("Column names");
 		return bean;
 	}
 
@@ -43,7 +44,7 @@ public class PDLService_ServiceDesc extends ServiceDescription<PDLServiceActivit
 	 */
 	@Override
 	public Icon getIcon() {
-		return PDLServiceIcon.getIcon();
+		return ImageServiceIcon.getIcon();
 	}
 
 	/**
@@ -52,7 +53,7 @@ public class PDLService_ServiceDesc extends ServiceDescription<PDLServiceActivit
 	 */
 	@Override
 	public String getName() {
-		return "PDL service";//exampleString;
+		return "Use Aladin macro";//exampleString;
 	}
 
 	/**
@@ -77,16 +78,7 @@ public class PDLService_ServiceDesc extends ServiceDescription<PDLServiceActivit
 	protected List<? extends Object> getIdentifyingData() {
 		// FIXME: Use your fields instead of example fields
 		//return Arrays.<Object>asList(exampleString, exampleUri);
-		return Arrays.<Object>asList("PDL", "astro-iaa", this.getName());
-	}
-	
-	/**
-	 * This method makes that the configuration panel appears when you add the service
-	 * from the service panel to the workflow design area
-	 */
-	@Override
-	public boolean isTemplateService() {
-		return true;
+		return Arrays.<Object>asList("aladin", "astro-iaa", this.getName());
 	}
 
 	
@@ -95,45 +87,26 @@ public class PDLService_ServiceDesc extends ServiceDescription<PDLServiceActivit
 	// for instance try a search for exampleString:3)
 	
 	
-	private String pdlDescriptionFile;
-
-
-	public String getPdlDescriptionFile() {
-		return pdlDescriptionFile;
-	}
-
-	public void setPdlDescriptionFile(String pdlDescriptionFile) {
-		this.pdlDescriptionFile = pdlDescriptionFile;
-	}
+	private String typeOfInput;
+	private String typeOfMode;
 	
+	//private String typeOfFilter;
 
-
-	/*
-	public String getTypeOfFilter() {
-		return typeOfFilter;
+	public String getTypeOfInput() {
+		return typeOfInput;
 	}
 
-	public void setTypeOfFilter(String typeOfFilter) {
-		this.typeOfFilter = typeOfFilter;
+	public String getTypeOfMode() {
+		return typeOfMode;
 	}
-	*/
 
-	
-	//private String exampleString;
-	//private URI exampleUri;
-	
-	//public String getExampleString() {
-	//	return exampleString;
-	//}
-	//public URI getExampleUri() {
-	//	return exampleUri;
-	//}
-	//public void setExampleString(String exampleString) {
-	//	this.exampleString = exampleString;
-	//}
-	//public void setExampleUri(URI exampleUri) {
-	//	this.exampleUri = exampleUri;
-	//}
+	public void setTypeOfMode(String typeOfMode) {
+		this.typeOfMode = typeOfMode;
+	}
+
+	public void setTypeOfInput(String typeOfInput) {
+		this.typeOfInput = typeOfInput;
+	}
 
 
 }

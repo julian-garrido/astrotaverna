@@ -1,15 +1,15 @@
-package org.purl.wf4ever.astrotaverna.voutils;
+package org.purl.wf4ever.astrotaverna.aladin;
 
 import java.io.File;
 import java.io.Serializable;
 //import java.net.URI;
 
 /**
- * Stilts activity configuration bean.
+ * Activity Configuration bean
  * @author Julian Garrido
  * @since    19 May 2011
  */
-public class AddCommonRowToVOTableActivityConfigurationBean implements Serializable {
+public class AladinMacroActivityConfigurationBean implements Serializable {
 
 	/*
 	 * TODO: Remove this comment.
@@ -31,10 +31,9 @@ public class AddCommonRowToVOTableActivityConfigurationBean implements Serializa
 	
 	// TODO: Remove the example fields and getters/setters and add your own	
 	
-	private String typeOfInput = "String";
-	private String commonRowPosition = "Left";
+	private String typeOfInput;
+	private String typeOfMode;
 	
-	//private String typeOfFilter;
 
 	public String getTypeOfInput() {
 		return typeOfInput;
@@ -43,19 +42,14 @@ public class AddCommonRowToVOTableActivityConfigurationBean implements Serializa
 	public void setTypeOfInput(String typeOfInput) {
 		this.typeOfInput = typeOfInput;
 	}
-
-	public String getCommonRowPosition() {
-		return commonRowPosition;
+	
+	public String getTypeOfMode() {
+		return typeOfMode;
 	}
 
-	public void setCommonRowPosition(String commonRowPosition) {
-		this.commonRowPosition = commonRowPosition;
+	public void setTypeOfMode(String typeOfProcess) {
+		this.typeOfMode = typeOfProcess;
 	}
-
-	
-	
-	
-	
 	
 
 }

@@ -47,6 +47,7 @@ public class PDLServiceActivityTest {
 	private static final String OUT_SIMPLE_OUTPUT = "outputFileOut";
 	private static final String OUT_REPORT = "status";
 	private static final String RESPONSE_BODY = "response_body";
+	private static final String DEFAULT_OUTPUT = "fileResult";
 	
 	private PDLServiceActivity activity = new PDLServiceActivity();
 
@@ -92,6 +93,8 @@ public class PDLServiceActivityTest {
 		Map<String, Class<?>> expectedOutputTypes = new HashMap<String, Class<?>>();
 		//expectedOutputTypes.put(OUT_SIMPLE_OUTPUT, String.class);
 		expectedOutputTypes.put(OUT_REPORT, String.class);
+		expectedOutputTypes.put(RESPONSE_BODY, String.class);
+		expectedOutputTypes.put(DEFAULT_OUTPUT, String.class);
 
 		Map<String, Object> outputs = ActivityInvoker.invokeAsyncActivity(activity, inputs, expectedOutputTypes);
 
@@ -138,9 +141,10 @@ public class PDLServiceActivityTest {
 		
 
 		Map<String, Class<?>> expectedOutputTypes = new HashMap<String, Class<?>>();
-		//expectedOutputTypes.put(OUT_SIMPLE_OUTPUT, String.class);
+		expectedOutputTypes.put(RESPONSE_BODY, String.class);
 		expectedOutputTypes.put(OUT_REPORT, String.class);
-
+		expectedOutputTypes.put(DEFAULT_OUTPUT, String.class);
+		
 		Map<String, Object> outputs = ActivityInvoker.invokeAsyncActivity(
 				activity, inputs, expectedOutputTypes);
 
@@ -184,8 +188,9 @@ public class PDLServiceActivityTest {
 		
 
 		Map<String, Class<?>> expectedOutputTypes = new HashMap<String, Class<?>>();
-		//expectedOutputTypes.put(OUT_SIMPLE_OUTPUT, String.class);
+		expectedOutputTypes.put(RESPONSE_BODY, String.class);
 		expectedOutputTypes.put(OUT_REPORT, String.class);
+		expectedOutputTypes.put(DEFAULT_OUTPUT, String.class);
 
 		Map<String, Object> outputs = ActivityInvoker.invokeAsyncActivity(
 				activity, inputs, expectedOutputTypes);
@@ -219,6 +224,7 @@ public class PDLServiceActivityTest {
 		//expectedOutputTypes.put(OUT_SIMPLE_OUTPUT, String.class);
 		expectedOutputTypes.put(OUT_REPORT, String.class);
 		expectedOutputTypes.put(RESPONSE_BODY, String.class);
+		expectedOutputTypes.put(DEFAULT_OUTPUT, String.class);
 		
 
 		Map<String, Object> outputs = ActivityInvoker.invokeAsyncActivity(
@@ -232,7 +238,8 @@ public class PDLServiceActivityTest {
 
 	}
 	
-	
+	//This test was for the service at Paris. Now It has been moved to IAA
+	@Ignore 
 	@Test
 	public void executeMontageTavernaEntryPointService() throws Exception {
 		String serviceURL = "http://pdl-calc.obspm.fr:8081/montage/pdlDescription/PDL-Description.xml";
@@ -262,6 +269,7 @@ public class PDLServiceActivityTest {
 		//expectedOutputTypes.put(OUT_SIMPLE_OUTPUT, String.class);
 		expectedOutputTypes.put(OUT_REPORT, String.class);
 		expectedOutputTypes.put(RESPONSE_BODY, String.class);
+		expectedOutputTypes.put(DEFAULT_OUTPUT, String.class);
 		
 
 		Map<String, Object> outputs = ActivityInvoker.invokeAsyncActivity(
@@ -282,8 +290,170 @@ public class PDLServiceActivityTest {
 
 	}
 	
-	//THIS IS USING LOCAL FILES
+	
+	@Test
+	public void executeIAAMontageTavernaEntryPointService() throws Exception {
+		String serviceURL = "http://dae81.iaa.es:8081/montage/pdlDescription/PDL-Description.xml";
+			    
+		configBean.setPdlDescriptionFile(serviceURL);
+		activity.configure(configBean);
+
+		Map<String, Object> inputs = new HashMap<String, Object>();
+		Float value = new Float(2/3.0);
+		inputs.put("NAXIS1", "2259");
+		inputs.put("NAXIS2", "2199");
+		inputs.put("CTYPE1", "RA---TAN");
+		inputs.put("CTYPE2", "DEC--TAN");
+		inputs.put("CRVAL1", "210.835222357");
+		inputs.put("CRVAL2", "54.367562188");
+		//inputs.put("CDELT1", "-0.000277780");
+		inputs.put("CDELT1", "-0.000279780");
+		inputs.put("CDELT2", "0.000277780");
+		inputs.put("CRPIX1", "1130");
+		inputs.put("CRPIX2", "1100");
+		inputs.put("CROTA2", "-0.052834593"); //orig value: -0.052834592
+		inputs.put("EQUINOX", "2000");
+		inputs.put("ImageLocation", "SampleLocation");
+		inputs.put("mail", "jgarrido@iaa.es");
+		
+
+		Map<String, Class<?>> expectedOutputTypes = new HashMap<String, Class<?>>();
+		//expectedOutputTypes.put(OUT_SIMPLE_OUTPUT, String.class);
+		expectedOutputTypes.put(OUT_REPORT, String.class);
+		expectedOutputTypes.put(RESPONSE_BODY, String.class);
+		expectedOutputTypes.put(DEFAULT_OUTPUT, String.class);
+		
+
+		Map<String, Object> outputs = ActivityInvoker.invokeAsyncActivity(
+				activity, inputs, expectedOutputTypes);
+
+		int expectedoutputs=2;
+		if(outputs.size()==3)
+			expectedoutputs=3;
+		assertEquals("Unexpected outputs", expectedoutputs, outputs.size());//only if the result
+		assertTrue("Invalid or error status", PDLServiceController.getPendingStatus().compareTo((String)outputs.get(OUT_REPORT)) ==0 
+				                  || PDLServiceController.getFinishedStatus().compareTo((String)outputs.get(OUT_REPORT)) ==0
+				                  || PDLServiceController.getCompletedStatus().compareTo((String)outputs.get(OUT_REPORT)) ==0
+				                  || PDLServiceController.getRunningStatus().compareTo((String)outputs.get(OUT_REPORT)) ==0
+				                  || PDLServiceController.getExecutingStatus().compareTo((String)outputs.get(OUT_REPORT)) ==0);
+		System.out.println("Status: "+ (String)outputs.get(OUT_REPORT));
+		//assertEquals(Arrays.asList("Value 1", "Value 2"), outputs
+		//		.get("moreOutputs"));
+
+	}
+	
+	
+	//commented only to not overload the Paris Service
 	@Ignore
+	@Test
+	public void executeParisDurhamTavernaEntryPointService() throws Exception {
+		String serviceURL = "http://pdl-calc.obspm.fr:8081/ParisDurham/pdlDescription/PDL-Description.xml";
+			    
+		configBean.setPdlDescriptionFile(serviceURL);
+		activity.configure(configBean);
+
+		Map<String, Object> inputs = new HashMap<String, Object>();
+		//Double value = new Double(0.00000000000001);
+		Double value = new Double(1.0E-15);
+		System.out.println("Float value: " + value.toString());
+		//The service doesn't converge with the following set of parameters(commented)
+		/*
+		//parameter group
+		inputs.put("NstepMax", "5000");
+		inputs.put("NstepW", "300");
+		inputs.put("NH2Lev", "12");
+		inputs.put("NH2Lines", "20");
+		inputs.put("iforH2", "2");
+		inputs.put("ikinH2", "2");
+		inputs.put("xll", "1");
+		inputs.put("epsV", value.toString());
+		inputs.put("TimeJ", "600");
+		inputs.put("durationMax", "1000");
+		//parameter group
+		//inputs.put("Zeta", "0,00000000000001");
+		inputs.put("Zeta", value.toString());
+		//parameter group
+		inputs.put("shockType", "C");
+		inputs.put("Nfluids", "2");
+		inputs.put("Bbeta", "1");
+		inputs.put("Vs", "200");
+		inputs.put("Vdi", "250");
+		inputs.put("OpH2", "100");
+		inputs.put("Ti", "400");
+		inputs.put("nHi", "1");
+		inputs.put("Tg", "220");
+		//parameter group
+		inputs.put("SOS", "CD");
+		inputs.put("LEOS", "CD");
+		inputs.put("LIOS", "local");
+		*/
+		//numerical parameters
+		inputs.put("NstepMax", "5000");//-
+		inputs.put("NstepW", "5");//-
+		inputs.put("NH2Lev", "150");//-
+		inputs.put("NH2Lines", "200");//-
+		inputs.put("iforH2", "1");//-
+		inputs.put("ikinH2", "2");//-
+		inputs.put("xll", "1.00E9");//-
+		inputs.put("epsV", "1.00E-8");//-
+		inputs.put("TimeJ", "2.00E10");//-
+		inputs.put("durationMax", "1.00E5");//-
+		//H_h2_flag --->BOTH
+		//Force_I_C --> 1: Force Ion Conservation
+		//parameter group
+		//inputs.put("Zeta", "0,00000000000001");
+		inputs.put("Zeta", "5.0E-17");//-
+		//shock parameters
+		inputs.put("shockType", "C");//-
+		inputs.put("Nfluids", "3");//-
+		inputs.put("Bbeta", "1.0");//-
+		inputs.put("Vs", "25.0");//-
+		inputs.put("Vdi", "1000.0");
+		inputs.put("OpH2", "3.0");//-
+		inputs.put("Ti", "10");//-
+		inputs.put("nHi", "10000.0");//-
+		inputs.put("Tg", "15");//-
+		//Cool_KN -> 1
+		//output specifications
+		inputs.put("SOS", "FD");//-
+		inputs.put("LEOS", "ln(N/g)");//-
+		inputs.put("LIOS", "local");//-
+		//others
+		inputs.put("mail", "tetrarquis@gmail.com");
+		
+
+		Map<String, Class<?>> expectedOutputTypes = new HashMap<String, Class<?>>();
+		//expectedOutputTypes.put(OUT_SIMPLE_OUTPUT, String.class);
+		expectedOutputTypes.put(OUT_REPORT, String.class);
+		expectedOutputTypes.put(RESPONSE_BODY, String.class);
+		expectedOutputTypes.put(DEFAULT_OUTPUT, String.class);
+		
+
+		Map<String, Object> outputs = ActivityInvoker.invokeAsyncActivity(activity, inputs, expectedOutputTypes);
+
+		int expectedoutputs=3;
+		
+		
+		assertEquals("Unexpected outputs", expectedoutputs, outputs.size());//only if the result
+		
+		assertTrue("Invalid or error status", PDLServiceController.getPendingStatus().compareTo((String)outputs.get(OUT_REPORT)) ==0 
+				                  || PDLServiceController.getFinishedStatus().compareTo((String)outputs.get(OUT_REPORT)) ==0
+				                  || PDLServiceController.getCompletedStatus().compareTo((String)outputs.get(OUT_REPORT)) ==0
+				                  || PDLServiceController.getRunningStatus().compareTo((String)outputs.get(OUT_REPORT)) ==0
+				                  || PDLServiceController.getExecutingStatus().compareTo((String)outputs.get(OUT_REPORT)) ==0);
+		
+		System.out.println("-------------------------------------");
+		System.out.println(outputs.get(RESPONSE_BODY));
+		System.out.println("-------------------------------------");
+		
+		//assertEquals(Arrays.asList("Value 1", "Value 2"), outputs
+		//		.get("moreOutputs"));
+
+	}
+	
+	
+	//THIS IS USING LOCAL FILES
+	
 	@Test
 	public void reConfiguredActivity() throws Exception {
 		
@@ -310,12 +480,12 @@ public class PDLServiceActivityTest {
 		
 		activity.configure(configBean);
 		assertEquals("Unexpected inputs", 16, activity.getInputPorts().size());
-		assertEquals("Unexpected outputs", 1, activity.getOutputPorts().size());
+		assertEquals("Unexpected outputs", 3, activity.getOutputPorts().size());
 
 		activity.configure(configBean);
 		// Should not change on reconfigure
 		assertEquals("Unexpected inputs", 16, activity.getInputPorts().size());
-		assertEquals("Unexpected outputs", 1, activity.getOutputPorts().size());
+		assertEquals("Unexpected outputs", 3, activity.getOutputPorts().size());
 		Iterator<ActivityInputPort> it = activity.getInputPorts().iterator();
 		
 		/*
