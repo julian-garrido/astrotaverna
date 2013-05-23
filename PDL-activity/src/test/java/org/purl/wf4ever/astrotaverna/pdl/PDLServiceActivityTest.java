@@ -452,6 +452,7 @@ public class PDLServiceActivityTest {
 	}
 	
 	
+	
 	@Test
 	public void reConfiguredActivity() throws Exception {
 		
@@ -486,7 +487,7 @@ public class PDLServiceActivityTest {
 		assertEquals("Unexpected inputs", 14, activity.getInputPorts().size());
 		assertEquals("Unexpected outputs", 3, activity.getOutputPorts().size());
 		Iterator<ActivityInputPort> it = activity.getInputPorts().iterator();
-		
+
 	}
 	
 	
