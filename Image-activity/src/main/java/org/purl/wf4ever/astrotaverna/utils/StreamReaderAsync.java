@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+//Author: Julian Garrido
 public class StreamReaderAsync  extends Thread{
 
     InputStream is;
