@@ -277,12 +277,11 @@ public class AladinScriptActivityTest {
 		assertTrue(!file.getAbsolutePath().isEmpty());
 		assertTrue(file.getAbsolutePath().endsWith("Aladin-7.5.jar"));
 		
-		System.out.println("Trying to create a new Aladin object");
+		//System.out.println("Trying to create a new Aladin object");
 		
-		Aladin aladin_object;
-		aladin_object = new Aladin();
 
-		System.out.println("A New object was created");
+		//Aladin aladin_object;
+		//aladin_object = new Aladin();
 		
 	}
 	
