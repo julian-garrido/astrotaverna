@@ -3,7 +3,7 @@
   <parent>
     <artifactId>astrotaverna</artifactId>
     <groupId>org.purl.wf4ever.astrotaverna</groupId>
-    <version>1.07.10</version>
+    <version>1.07.11-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>file-reference-builder</artifactId>
