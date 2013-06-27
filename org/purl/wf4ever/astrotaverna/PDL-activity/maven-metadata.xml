@@ -3,7 +3,7 @@
   <groupId>org.purl.wf4ever.astrotaverna</groupId>
   <artifactId>PDL-activity</artifactId>
   <versioning>
-    <release>1.07.9</release>
+    <release>1.07.10</release>
     <versions>
       <version>1.03</version>
       <version>1.041</version>
@@ -13,7 +13,8 @@
       <version>1.07.6</version>
       <version>1.07.7</version>
       <version>1.07.9</version>
+      <version>1.07.10</version>
     </versions>
-    <lastUpdated>20130627120800</lastUpdated>
+    <lastUpdated>20130627125438</lastUpdated>
   </versioning>
 </metadata>
