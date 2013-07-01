@@ -28,4 +28,5 @@
 <plugin>astrotaverna-plugin-1.07.10.xml</plugin>
 <plugin>astrotaverna-plugin-1.07.901.xml</plugin>
 <plugin>astrotaverna-plugin-1.07.902.xml</plugin>
+<plugin>astrotaverna-plugin-1.07.903.xml</plugin>
 </plugins>
