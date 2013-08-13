@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
@@ -166,4 +167,69 @@ public class AladinScriptParserTest {
 		//delete files with votables
 	}
 	*/
+	
+	@Ignore
+	@Test
+	public void parseFileMacro() throws Exception {
+		String lsp = System.getProperty("line.separator");
+		//System.out.println("----"+lsp+"---");
+		
+		ArrayList<ArrayList<String>> list = parser.parseFileMacro("/home/julian/src/astrotaverna/Image-activity/src/main/resources/macro.ajs", "/home/julian/src/astrotaverna/Image-activity/src/main/resources/parameterFile.dat");
+		
+		assertEquals("Unexpected number of elemens", 20,  list.size());
+		
+		String path = "D:\\Escritorio\\SVOWf96413_2005WC48.xml";
+		String readPath = list.get(0).get(0);
+		
+		System.out.println(path);
+		System.out.println(readPath);
+		
+		if(list.size()>0){
+			assertEquals("Unexpected filename", "D:\\Escritorio\\SVOWf96413_2005WC48.xml", list.get(0).get(0));
+			assertEquals("Unexpected filename", "D:\\Escritorio\\SVOWf96413_2006XC43.xml", list.get(0).get(1));
+			assertEquals("Unexpected filename", "D:\\Escritorio\\SVOWf96413_2001XQ72.xml", list.get(1).get(0));
+			assertEquals("Unexpected filename", "D:\\Escritorio\\SVOWf96413_2008GX69.xml", list.get(1).get(1));
+			assertEquals("Unexpected filename", "D:\\Escritorio\\SVOWf96426_2005TF111.xml", list.get(2).get(0));
+			assertEquals("Unexpected filename", "D:\\Escritorio\\SVOWf96426_2005SD289.xml", list.get(2).get(1));
+		}		
+	}
+	
+	//inputs.put(FIRST_INPUT, "/home/julian/src/astrotaverna/Image-activity/src/main/resources/macro.ajs");
+	//inputs.put(SECOND_INPUT, "/home/julian/src/astrotaverna/Image-activity/src/main/resources/parameterFile.dat");
+	
+	@Test
+	public void replaceDolarsWithWindowsPaths(){
+		String result = "__$2";
+		String path = "D:\\Escritorio\\SVOWf96413_2005WC48.xml";
+		String dolar = Pattern.quote("$") + 2;
+		String aux1 = result.replaceAll(dolar, path);
+		System.out.println(aux1);
+		String aux2 = result.replaceAll("$2", path);
+		System.out.println(aux2);
+		String aux3 = result.replaceAll("$2", Pattern.quote(path));
+		System.out.println(aux3);
+		String aux4 = result.replaceAll(dolar, Pattern.quote(path));
+		System.out.println(aux4);
+		
+	    String aux5 = Pattern.compile("$2").matcher(result).replaceAll(path);
+	    System.out.println(aux5);
+
+	    String aux6 = Pattern.compile(dolar).matcher(result).replaceAll(path);
+	    System.out.println(aux6);
+	    
+	    Pattern.compile("$2").matcher(result);
+		String aux7 = Matcher.quoteReplacement(path);
+	    System.out.println(aux7);
+
+	    String aux8 = Pattern.compile(dolar).matcher(result).quoteReplacement(path);
+	    System.out.println(aux8);
+	    
+	    String aux9 = result.replaceAll(dolar, Matcher.quoteReplacement(path));
+		System.out.println(aux9);
+		
+		assertEquals("We have lost slashes", "__"+path, aux9);
+	}	
+
+	
+	
 }

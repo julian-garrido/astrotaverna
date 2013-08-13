@@ -13,6 +13,8 @@ import net.sf.taverna.t2.workflowmodel.health.HealthCheck;
 import net.sf.taverna.t2.workflowmodel.health.HealthChecker;
 import net.sf.taverna.t2.workflowmodel.processor.activity.ActivityConfigurationException;
 
+import org.purl.wf4ever.astrotaverna.pdl.PDLServiceActivityConfigurationBean;
+
 /**
  * Stilts health checker
  * @author Julian Garrido
@@ -71,7 +73,8 @@ public class PDLServiceHealthChecker implements
 		}
 		
 		if( !(config.getServiceType().compareTo(config.PDLSERVICE) == 0 
-				|| config.getServiceType().compareTo(config.RESTSERVICE) == 0)){
+				|| config.getServiceType().compareTo(config.RESTSERVICE) == 0
+				|| config.getServiceType().compareTo(config.VOTABLERESTSERVICE) == 0)){
 			
 			subReports.add(new VisitReport(HealthCheck.getInstance(), activity,
 					"Invalid service type.", HealthCheck.INVALID_CONFIGURATION,

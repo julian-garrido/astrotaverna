@@ -8,10 +8,13 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,12 +23,14 @@ import net.sf.taverna.t2.workflowmodel.OutputPort;
 import net.sf.taverna.t2.workflowmodel.processor.activity.ActivityConfigurationException;
 import net.sf.taverna.t2.workflowmodel.processor.activity.ActivityInputPort;
 
+
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.purl.wf4ever.astrotaverna.utils.MyUtils;
+import org.purl.wf4ever.astrotaverna.pdl.PDLServiceActivityConfigurationBean;
+//import org.purl.wf4ever.astrotaverna.utils.MyUtils;
 
 //http://pdl-calc.obspm.fr:8081/broadening/pdlDescription/PDL-Description.xml
 
@@ -41,12 +46,8 @@ public class PDLServiceActivityTest {
 	private PDLServiceActivityConfigurationBean configBean;
 
 	//these variables must be the same than the ones defined in the activity class
-	private static final String IN_FIRST_INPUT = "votable1";
-	private static final String IN_SECOND_INPUT = "votable2";
-	private static final String IN_OUTPUT_TABLE_NAME = "outputFileNameIn";
-	private static final String OUT_SIMPLE_OUTPUT = "outputFileOut";
 	private static final String OUT_REPORT = "status";
-	private static final String RESPONSE_BODY = "response_body";
+	private static final String RESPONSE_BODY = "responseBody";
 	private static final String DEFAULT_OUTPUT = "fileResult";
 	
 	private PDLServiceActivity activity = new PDLServiceActivity();
@@ -109,9 +110,10 @@ public class PDLServiceActivityTest {
 
 
 
+	
+	/*
 	//test with not valid input: the float is 1/12.0 instead of 1/15.0
 	//¿PQ LANZA ESTE UNA EXCEPCION?
-	
 	@Test(expected = java.lang.RuntimeException.class)
 	public void executeAsynchNotValid() throws Exception {
 		InputStream is = this.getClass().getResourceAsStream("/org/purl/wf4ever/astrotaverna/pdl/PDL-DescriptionTest.xml");
@@ -203,6 +205,7 @@ public class PDLServiceActivityTest {
 		//		.get("moreOutputs"));
 
 	}
+	*/
 
 	@Ignore
 	@Test
@@ -547,6 +550,111 @@ public class PDLServiceActivityTest {
 	}
 	
 	
+	@Test
+	public void executeAMIGAConeSearchService() throws Exception {
+		String serviceURL = "http://www.myexperiment.org/files/999/versions/4/download/AMIGA-PDL-Description.xml";
+		
+		configBean.setPdlDescriptionFile(serviceURL);
+		configBean.setServiceType(configBean.RESTSERVICE);
+		activity.configure(configBean);
+
+		Map<String, Object> inputs = new HashMap<String, Object>();
+		
+		inputs.put("RA", "90");
+		inputs.put("DEC", "90");
+		inputs.put("SR", "180");
+		
+
+		Map<String, Class<?>> expectedOutputTypes = new HashMap<String, Class<?>>();
+		expectedOutputTypes.put(RESPONSE_BODY, String.class);
+		
+
+		Map<String, Object> outputs = ActivityInvoker.invokeAsyncActivity(
+				activity, inputs, expectedOutputTypes);
+
+		int expectedoutputs=1;
+		
+		assertEquals("Unexpected outputs", expectedoutputs, outputs.size());//only if the result
+		assertTrue("The service didn't return any result", ((String)outputs.get(RESPONSE_BODY))!= null 
+					&& ((String)outputs.get(RESPONSE_BODY)).length()>0);
+		
+
+	}
+	
+	@Test(expected = java.lang.RuntimeException.class)
+	public void executeAMIGAConeSearchWithInvalidValueService() throws Exception {
+		String serviceURL = "http://www.myexperiment.org/files/999/versions/4/download/AMIGA-PDL-Description.xml";
+		
+		configBean.setPdlDescriptionFile(serviceURL);
+		configBean.setServiceType(configBean.RESTSERVICE);
+		activity.configure(configBean);
+
+		Map<String, Object> inputs = new HashMap<String, Object>();
+		
+		inputs.put("RA", "90");
+		inputs.put("DEC", "360");
+		inputs.put("SR", "180");
+		
+
+		Map<String, Class<?>> expectedOutputTypes = new HashMap<String, Class<?>>();
+		expectedOutputTypes.put(RESPONSE_BODY, String.class);
+		
+
+		Map<String, Object> outputs = ActivityInvoker.invokeAsyncActivity(
+				activity, inputs, expectedOutputTypes);
+
+		int expectedoutputs=1;
+		
+		assertEquals("Unexpected outputs", expectedoutputs, outputs.size());//only if the result
+		assertTrue("The service didn't return any result", ((String)outputs.get(RESPONSE_BODY))!= null 
+					&& ((String)outputs.get(RESPONSE_BODY)).length()>0);
+	}
+	
+	@Test
+	public void executeAMIGAConeSearchWithExtendedResultService() throws Exception {
+		String serviceURL = "http://www.myexperiment.org/files/1002/versions/4/download/AMIGA-PDL-DescriptionExtended.xml";
+		
+		configBean.setPdlDescriptionFile(serviceURL);
+		configBean.setServiceType(configBean.VOTABLERESTSERVICE);
+		activity.configure(configBean);
+
+		Map<String, Object> inputs = new HashMap<String, Object>();
+		
+		inputs.put("RA", "90");
+		inputs.put("DEC", "90");
+		inputs.put("SR", "180");
+		
+
+		Map<String, Class<?>> expectedOutputTypes = new HashMap<String, Class<?>>();
+		expectedOutputTypes.put(RESPONSE_BODY, String.class);
+
+		expectedOutputTypes.put("LB", String.class);
+		expectedOutputTypes.put("V3K", String.class);
+		expectedOutputTypes.put("RA_J2000", String.class);
+		expectedOutputTypes.put("DEC_J2000", String.class);
+		
+
+		Map<String, Object> outputs = ActivityInvoker.invokeAsyncActivity(
+				activity, inputs, expectedOutputTypes);
+
+		int expectedoutputs=5;
+		
+		assertEquals("Unexpected outputs", expectedoutputs, outputs.size());//only if the result
+		assertTrue("The service didn't return any result", ((String)outputs.get(RESPONSE_BODY))!= null 
+					&& ((String)outputs.get(RESPONSE_BODY)).length()>0);
+		
+		assertTrue("LB output error", ((ArrayList)outputs.get("LB"))!=null
+				&& ((ArrayList)outputs.get("LB")).size() > 1000);
+		
+		assertTrue("V3K output error", ((ArrayList)outputs.get("V3K"))!=null 
+				&& ((ArrayList)outputs.get("V3K")).size()>0);
+		assertTrue("RA output error", ((ArrayList)outputs.get("RA_J2000"))!=null 
+				&& ((ArrayList)outputs.get("RA_J2000")).size()>0);
+		assertTrue("DEC output error", ((ArrayList)outputs.get("DEC_J2000"))!=null 
+				&& ((ArrayList)outputs.get("DEC_J2000")).size()>0);
+		
+
+	}
 	
 	@Test
 	public void reConfiguredActivity() throws Exception {
@@ -582,7 +690,31 @@ public class PDLServiceActivityTest {
 		assertEquals("Unexpected inputs", 14, activity.getInputPorts().size());
 		assertEquals("Unexpected outputs", 3, activity.getOutputPorts().size());
 		Iterator<ActivityInputPort> it = activity.getInputPorts().iterator();
+		
+		configBean.setPdlDescriptionFile("http://www.myexperiment.org/files/999/versions/4/download/AMIGA-PDL-Description.xml");
+		configBean.setServiceType(configBean.RESTSERVICE);
+		activity.configure(configBean);
+		
+		assertEquals("Unexpected inputs", 3, activity.getInputPorts().size());
+		assertEquals("Unexpected outputs", 1, activity.getOutputPorts().size());
+		
+		configBean.setPdlDescriptionFile("http://www.myexperiment.org/files/1002/versions/4/download/AMIGA-PDL-DescriptionExtended.xml");
+		configBean.setServiceType(configBean.RESTSERVICE);
+		activity.configure(configBean);
+		
+		assertEquals("Unexpected inputs", 3, activity.getInputPorts().size());
+		assertEquals("Unexpected outputs", 1, activity.getOutputPorts().size());
+		
+		configBean.setPdlDescriptionFile("http://www.myexperiment.org/files/1002/versions/4/download/AMIGA-PDL-DescriptionExtended.xml");
+		configBean.setServiceType(configBean.VOTABLERESTSERVICE);
+		activity.configure(configBean);
+		
 
+		System.out.println(activity.getOutputPorts());
+		assertEquals("Unexpected inputs", 3, activity.getInputPorts().size());
+		assertEquals("Unexpected outputs", 5, activity.getOutputPorts().size());
+
+		
 	}
 	
 	
