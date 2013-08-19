@@ -100,7 +100,7 @@ public class TestVORepository {
 		}
 		assertTrue("Could not find any ConeSearch", foundCapability);
 	}
-	
+	@Ignore
 	@Test
 	public void defaultConeSearch() throws Exception {
 		VORepository repo = new VORepository();
