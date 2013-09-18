@@ -60,9 +60,15 @@ public class PDLServiceParameterHealthCheckVisitExplainer implements VisitExplai
 		if((resultId & SKOS_ERROR) == SKOS_ERROR){
 			explanation = explanation + "SKOS concepts don't match in the sink and source ports.\n";
 		}
+		if((resultId & CONNECTED_TO_NON_PDL) == CONNECTED_TO_NON_PDL){
+			explanation = explanation + "If output-input pairs don't have PDL descriptions for both services, the interoperability cannot be guaranteed.\n";
+		}
 		if(resultId == UNKNOWN){
 			explanation = explanation + "Unknown issue - no expalanation available.\n";
-		}  		        
+		}
+		if(resultId == NON_METADATA_ERROR){
+			explanation = explanation + "There is no metadata to verify the interoperability.\n";
+		}
 		
 		return new ReadOnlyTextArea(explanation);
 	}
@@ -76,7 +82,7 @@ public class PDLServiceParameterHealthCheckVisitExplainer implements VisitExplai
 	public JComponent getSolution(VisitReport vr) {
 		// TODO Auto-generated method stub
 		int resultId = vr.getResultId();
-	    String explanation = null;
+	    String explanation = "";
 	    boolean includeConfigButton = false;
 	    //explanation = "puedo solucinarlo";
 	    
@@ -96,13 +102,16 @@ public class PDLServiceParameterHealthCheckVisitExplainer implements VisitExplai
 				explanation = explanation + "Check if source and sink ports correspond to equivalent concepts (UCDs).\n";
 			
 			if((resultId & UNIT_ERROR) == UNIT_ERROR)
-				explanation = explanation + "Chekc if you need a conversion factor between source and sink or if they are not compatible.\n";
+				explanation = explanation + "Check if you need a conversion factor between source and sink or if they are not compatible.\n";
 			
 			if((resultId & SKOS_ERROR) == SKOS_ERROR)
 				explanation = explanation + "Check if source and sink ports are represented by equivalent concepts.\n";
 	    }
 		if(resultId == UNKNOWN)
 			explanation = explanation + "Unknown issue - no solution available\n";
+		
+		if(resultId == NON_METADATA_ERROR)
+			explanation = explanation + "Ask the service provider for a more detailed PDL description.\n";
 		
 	    
 		return new ReadOnlyTextArea(explanation);

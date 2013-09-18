@@ -73,8 +73,9 @@ public class PDLServiceParameterHealthChecker implements
 			Map<String, SingleParameter> paramMap = activity.getSingleParametersForInputPorts();
 			Processor p = (Processor) VisitReport.findAncestor(ancestry, Processor.class);
 			Dataflow d = (Dataflow) VisitReport.findAncestor(ancestry, Dataflow.class);
-				System.err.println("----------------------------");
-				System.err.println("SINK ACTIVITY: "+ activity.getClass().getName());
+				System.out.println("----------------------------");
+				System.out.println("SINK ACTIVITY: "+ activity.getClass().getName());
+				logger.info("SINK ACTIVITY: "+ activity.getClass().getName());
 				//System.err.println("processor: "+ p.getLocalName());
 				//System.err.println("Dataflow: "+ d.getLocalName());
 			
@@ -90,14 +91,18 @@ public class PDLServiceParameterHealthChecker implements
 				aip = Tools.getActivityInputPort((Activity<?>) activity, entry.getKey());
 				
 				if (aip == null) {
-					continue;
+					//this is only in case some port names contain spaces in the pdl description.
+					aip = Tools.getActivityInputPort((Activity<?>) activity, entry.getKey().replaceAll(" ", "_"));
+					if (aip == null)
+						continue;
 				}
 				pip = Tools.getProcessorInputPort(p, (Activity<?>) activity, aip);
 				
-				if (pip == null) {
+				if (pip == null) { //if there is nothing connected to the port
 					continue;
 				}
 				
+				int count_valid_links = 0;
 				for (Datalink dl : d.getLinks()) {					
 					if (dl.getSink().equals(pip)) {
 							//System.err.println("param: " + name + ". Link:" + dl.getSink().getName() + ". Source: "+ dl.getSource().getName() + " Source class: "+dl.getSource().getClass());
@@ -107,8 +112,14 @@ public class PDLServiceParameterHealthChecker implements
 						    vr.setProperty("activity", activity);
 						    vr.setProperty("sinkPort", pip);
 						}
-						reports.addAll(subReports);
+						if(subReports!=null)
+							reports.addAll(subReports);
+						count_valid_links ++;
 					}
+				}
+				if(count_valid_links > 1){
+					System.err.println("It was expected only one link connecting to the sink input port. Activity: " + activity.getClass().getName() + "param: " + name);
+					logger.error("It was expected only one link connecting to the sink input port. Activity: " + activity.getClass().getName() + "param: " + name);
 				}
 			}
 		} catch (IOException e) {
@@ -134,24 +145,38 @@ public class PDLServiceParameterHealthChecker implements
 	
 
 	//InputPortTypeDescriptorActivity
+	/**
+	 * It checks if the metadata of source and sink ports are equal. During this comparation, string values
+	 * are converted to lower case. 
+	 * @param source
+	 * @param d
+	 * @param o
+	 * @param aip
+	 * @param sinkParam
+	 * @return
+	 */
 	private Set<VisitReport> checkSource(Port source, Dataflow d, Activity o, ActivityInputPort aip, SingleParameter sinkParam) {
 		Set<VisitReport> reports = new HashSet<VisitReport>();
 		if (source instanceof ProcessorPort) {
 			ProcessorPort processorPort = (ProcessorPort) source;
 			Processor sourceProcessor = processorPort.getProcessor();
 			Activity sourceActivity = sourceProcessor.getActivityList().get(0);
-			System.err.println("++++++++++++++++++++++++++++++");
-			System.err.println("SOURCE ACTIVITY:  "+ sourceActivity.getClass().getName());
-			//if it is a PDLService
+			System.out.println("++++++++++++++++++++++++++++++");
+			System.out.println("(PDLParamChecker) SOURCE ACTIVITY:  "+ sourceActivity.getClass().getName());
+			logger.info("SOURCE ACTIVITY:  "+ sourceActivity.getClass().getName());
+			//if it is a PDLService (PDLServiceActivity implements InputPortSingleParameterActivity)
 			//if (sourceActivity instanceof OutputPortSingleParameterActivity) {
 			if (!(sourceActivity instanceof InputPortSingleParameterActivity)) {	
-				VisitReport newReport = new VisitReport(HealthCheck.getInstance(), o, "Source of " + aip.getName(), HealthCheck.INVALID_CONFIGURATION, Status.WARNING);
+				
+				VisitReport newReport = new VisitReport(PDLServiceParameterHealthCheck.getInstance(), o, "Source of " + aip.getName()+" Connected to a non PDL service", PDLServiceParameterHealthCheck.CONNECTED_TO_NON_PDL, Status.WARNING);
 				newReport.setProperty("sinkPortName", aip.getName());
-				newReport.setProperty("sourceName", source.getName());
-				newReport.setProperty("isProcessorSource", "false");
+				newReport.setProperty("sourceName", sourceProcessor.getLocalName());
+				newReport.setProperty("isProcessorSource", "true");
 				reports.add(newReport);
 				
-				System.err.println("----not an inputportsingleParameter");
+				System.out.println("(PDLParamChecker)----not an inputportsingleParameter");
+				logger.info("(PDLParamChecker)----not an inputportsingleParameter");
+				
 			}else{
 			//	//System.err.println("\t La actividad de origen NO es una PDLServiceActivity");
 			//	//VisitReport newReport = new VisitReport(HealthCheck.getInstance(), o, "Source of " + aip.getName(), HealthCheck.DATATYPE_SOURCE, Status.WARNING);
@@ -162,52 +187,92 @@ public class PDLServiceParameterHealthChecker implements
 			//	newReport.setProperty("isProcessorSource", "true");
 			//	reports.add(newReport);		
 
-				System.err.println("----An inputportsingleParameter, Source processor: "+ sourceProcessor.getLocalName()+", sourcename: "+ source.getName()+ ", sinkname: "+ aip.getName());
+				System.out.println("(PDLParamChecker)----An inputportsingleParameter, Source processor: "+ sourceProcessor.getLocalName()+", sourcename: "+ source.getName()+ ", sinkname: "+ aip.getName());
+				logger.info("(PDLParamChecker)----An inputportsingleParameter, Source processor: "+ sourceProcessor.getLocalName()+", sourcename: "+ source.getName()+ ", sinkname: "+ aip.getName());
 				VisitReport newReport;
 				//System.err.println("\t La actividad de origen SI es tambien una PDLServiceActivity");
 				Map<String, SingleParameter> paramSourceActivity;
 				try {
 					paramSourceActivity = ((OutputPortSingleParameterActivity) sourceActivity).getSingleParametersForOutputPorts();
 				
-					String sourcePortName = source.getName();
+					String sourcePortName = source.getName(); //this name has no white spaces because they are replaced.
 					SingleParameter sourceParam = paramSourceActivity.get(sourcePortName);
+					if(sourceParam==null){
+						//paramSourceActivity may have names with white spaces.
+						for(Entry<String, SingleParameter> entryParams : paramSourceActivity.entrySet()){
+							if(entryParams.getKey().replaceAll(" ", "_").compareTo(sourcePortName)==0)
+								sourceParam = paramSourceActivity.get(entryParams.getKey());
+						}
+						
+					}
 					String description = "";
 					//compare with the SingleParameter from the inputPort
 					if(sourceParam != null){
 						int error = PDLServiceParameterHealthCheck.NO_ERROR;
-						if(sourceParam.getParameterType() != sinkParam.getParameterType()){
+						int countNonMetadataError = 0;
+						int passedTests = 0;
+						final int NUMBEROFERRORSTOCHECK = 5;
+						if(sourceParam.getParameterType() == null && sinkParam.getParameterType() == null){
+							error = error | PDLServiceParameterHealthCheck.NON_METADATA_ERROR;
+							countNonMetadataError++;
+						}else if(sourceParam.getParameterType() == null || sinkParam.getParameterType() == null)
 							error = error | PDLServiceParameterHealthCheck.TYPE_ERROR;
+						if(sourceParam.getParameterType().value().toLowerCase().compareTo(sinkParam.getParameterType().value().toLowerCase())!=0){
+							error = error | PDLServiceParameterHealthCheck.TYPE_ERROR;
+						}else{
+							passedTests ++;
 						}
 						//Expression exp = sourceParam.getPrecision(); //how to evaluate expressions???
 						//error = error | PDLServiceParameterHealthCheck.PRECISION_ERROR;
-						if((sourceParam.getUType() == null || sinkParam.getUType() == null ) && !(sourceParam.getUType() == null && sinkParam.getUType() == null ))
+						if(sourceParam.getUType() == null && sinkParam.getUType() == null ){
+							error = error | PDLServiceParameterHealthCheck.NON_METADATA_ERROR;
+							countNonMetadataError++;
+						}else if((sourceParam.getUType() == null || sinkParam.getUType() == null ))
 							error = error | PDLServiceParameterHealthCheck.UTYPE_ERROR;
-						else if((sourceParam.getUType() != null && sinkParam.getUType() != null ) 
-								&& 	(sourceParam.getUType().compareTo(sinkParam.getUType())!=0)){
+						else if((sourceParam.getUType().toLowerCase().compareTo(sinkParam.getUType().toLowerCase())!=0)){
 							error = error | PDLServiceParameterHealthCheck.UTYPE_ERROR;
-						}
+						}else
+							passedTests ++;
 						
 						//if((sourceParam.getSkossConcept() == null && sinkParam.getSkossConcept() != null) 
 						//		|| (sourceParam.getSkossConcept() != null &&sourceParam.getSkossConcept().compareTo(sinkParam.getSkossConcept())!=0)){
 						//	error = error | PDLServiceParameterHealthCheck.SKOS_ERROR;
 						//}
-						if((sourceParam.getSkossConcept() == null || sinkParam.getSkossConcept() == null ) && !(sourceParam.getSkossConcept() == null && sinkParam.getSkossConcept() == null ))
+						if (sourceParam.getSkossConcept() == null && sinkParam.getSkossConcept() == null ){
+							error = error | PDLServiceParameterHealthCheck.NON_METADATA_ERROR;
+							countNonMetadataError++;
+						}else if((sourceParam.getSkossConcept() == null || sinkParam.getSkossConcept() == null ))
 							error = error | PDLServiceParameterHealthCheck.SKOS_ERROR;
-						else if((sourceParam.getSkossConcept() != null && sinkParam.getSkossConcept() != null ) 
-								&& 	(sourceParam.getSkossConcept().compareTo(sinkParam.getSkossConcept())!=0)){
+						else if((sourceParam.getSkossConcept().toLowerCase().compareTo(sinkParam.getSkossConcept().toLowerCase())!=0)){
 							error = error | PDLServiceParameterHealthCheck.SKOS_ERROR;
-						}
+						}else 
+							passedTests ++;
 						
-						if(areUCDsequals(sourceParam.getUCD(), sinkParam.getUCD())){
+						if(sourceParam.getUCD() == null &&  sinkParam.getUCD() == null){
+							error = error | PDLServiceParameterHealthCheck.NON_METADATA_ERROR;
+							countNonMetadataError++;
+						}else if(sourceParam.getUCD() == null ||  sinkParam.getUCD() == null)
 							error = error | PDLServiceParameterHealthCheck.UCD_ERROR;
-						}
+						else if(!areUCDsequals(sourceParam.getUCD().toLowerCase(), sinkParam.getUCD().toLowerCase())){
+							error = error | PDLServiceParameterHealthCheck.UCD_ERROR;
+						}else 
+							passedTests ++;
 
-						if((sourceParam.getUnit() == null || sinkParam.getUnit() == null ) && !(sourceParam.getUnit() == null && sinkParam.getUnit() == null ))
+						if(sourceParam.getUnit() == null && sinkParam.getUnit() == null ){
+							error = error | PDLServiceParameterHealthCheck.NON_METADATA_ERROR;
+							countNonMetadataError++;
+						}else if((sourceParam.getUnit() == null || sinkParam.getUnit() == null ))
 							error = error | PDLServiceParameterHealthCheck.UNIT_ERROR;
 						else if((sourceParam.getUnit() != null && sinkParam.getUnit() != null ) 
-								&& 	(sourceParam.getUnit().compareTo(sinkParam.getUnit())!=0)){
+								&& 	(sourceParam.getUnit().toLowerCase().compareTo(sinkParam.getUnit().toLowerCase())!=0)){
 							error = error | PDLServiceParameterHealthCheck.UNIT_ERROR;
-						}
+						} else
+							passedTests ++;
+						
+						//Non metadata error i
+						//if((countNonMetadataError + passedTests) == NUMBEROFERRORSTOCHECK)
+						if(passedTests > 0 && error == PDLServiceParameterHealthCheck.NON_METADATA_ERROR)
+							error = PDLServiceParameterHealthCheck.NO_ERROR;
 						
 						//VisitReport newReport = new VisitReport(HealthCheck.getInstance(), o, "Source of " + aip.getName()+ ". Metadata doesn't match", HealthCheck.NO_PROBLEM, Status.OK);
 						if(error > 0 )
