@@ -10,7 +10,7 @@
 	<!--<groupId>org.purl.wf4ever.astrotaverna</groupId>-->
 	<artifactId>perspective-myexperiment</artifactId>
 	<name>myExperiment perspective</name>
-	<version>1.09.01</version>
+	<version>1.09.02-SNAPSHOT</version>
 	
 	<repositories>
 		<repository>
