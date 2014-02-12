@@ -3,7 +3,7 @@
   <groupId>org.purl.wf4ever.astrotaverna</groupId>
   <artifactId>PDL-activity-ui</artifactId>
   <versioning>
-    <release>1.08.07</release>
+    <release>1.09.01</release>
     <versions>
       <version>1.03</version>
       <version>1.041</version>
@@ -22,7 +22,8 @@
       <version>1.08.04</version>
       <version>1.08.05</version>
       <version>1.08.07</version>
+      <version>1.09.01</version>
     </versions>
-    <lastUpdated>20130918095544</lastUpdated>
+    <lastUpdated>20140212100351</lastUpdated>
   </versioning>
 </metadata>
