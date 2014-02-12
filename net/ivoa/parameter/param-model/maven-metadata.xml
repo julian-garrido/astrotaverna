@@ -3,11 +3,13 @@
   <groupId>net.ivoa.parameter</groupId>
   <artifactId>param-model</artifactId>
   <versioning>
-    <release>0.0.2-utillities-thread-safe</release>
+    <release>0.0.5-utilities-thread-safeRFC</release>
     <versions>
       <version>0.0.1-utillities-thread-safe</version>
       <version>0.0.2-utillities-thread-safe</version>
+      <version>0.0.4-utilities-thread-safeRFC</version>
+      <version>0.0.5-utilities-thread-safeRFC</version>
     </versions>
-    <lastUpdated>20130122110920</lastUpdated>
+    <lastUpdated>20140211221032</lastUpdated>
   </versioning>
 </metadata>
