@@ -120,5 +120,5 @@
 			<artifactId>log4j</artifactId>
 			<version>1.2.16</version>
 		</dependency>
-	</dependencies>
+	</dependencies> 
 </project>
