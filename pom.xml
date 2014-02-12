@@ -4,7 +4,7 @@
 
 	<groupId>org.purl.wf4ever.astrotaverna</groupId>
 	<artifactId>astrotaverna</artifactId>
-	<version>1.08.08-SNAPSHOT</version>
+	<version>1.09.01-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Astro Taverna</name>
 
@@ -157,6 +157,10 @@
     <module>Image-activity</module>
     <module>Image-activity-ui</module>
     <module>query-activity-ui</module>
+    
+    
+    <!--  Module myexperiment-->
+    <module>perspective-myexperiment</module>
   </modules>
   <scm>
   	<!-- <url>https://github.com/wf4ever/astrotaverna</url> -->
