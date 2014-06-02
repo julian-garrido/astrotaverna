@@ -4,11 +4,14 @@
 
 	<groupId>org.purl.wf4ever.astrotaverna</groupId>
 	<artifactId>astrotaverna</artifactId>
-	<version>1.09.02-SNAPSHOT</version>
+	<version>1.10.01-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Astro Taverna</name>
 
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
 		<!--  Update according to latest Taverna version in 
 		http://www.mygrid.org.uk/dev/wiki/display/developer/Maven+module+version+numbers
 		 -->
@@ -139,7 +142,6 @@
 
   <modules>    
     <module>astrotaverna-voservices</module>
-    <module>astrotaverna-plugin</module>
     <module>astrotaverna-vo-repository</module>
     <!-- <module>coordinatestool-activity</module>
     <module>coordinatestool-activity-ui</module>-->
@@ -157,10 +159,11 @@
     <module>Image-activity</module>
     <module>Image-activity-ui</module>
     <module>query-activity-ui</module>
+    <module>astrotaverna-plugin</module>
     
     
     <!--  Module myexperiment-->
-    <module>perspective-myexperiment</module>
+    <!-- <module>perspective-myexperiment</module> -->
   </modules>
   <scm>
   	<!-- <url>https://github.com/wf4ever/astrotaverna</url> -->
