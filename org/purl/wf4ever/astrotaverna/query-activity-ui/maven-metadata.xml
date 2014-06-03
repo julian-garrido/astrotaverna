@@ -27,7 +27,8 @@
       <version>1.08.05</version>
       <version>1.08.07</version>
       <version>1.09.01</version>
+      <version>1.10.01-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20140212100516</lastUpdated>
+    <lastUpdated>20140603065221</lastUpdated>
   </versioning>
 </metadata>
