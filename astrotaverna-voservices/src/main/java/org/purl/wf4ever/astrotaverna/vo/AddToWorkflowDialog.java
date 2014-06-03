@@ -26,6 +26,8 @@ import javax.swing.KeyStroke;
 import net.ivoa.xml.voresource.v1.Service;
 import net.sf.taverna.t2.workbench.ui.impl.Workbench;
 
+
+
 public class AddToWorkflowDialog extends JDialog {
 	public class SetInputPort extends AbstractAction implements Action {
 		private static final long serialVersionUID = 1L;
@@ -190,9 +192,12 @@ public class AddToWorkflowDialog extends JDialog {
 		gbcSuperRight.weightx = 0.2;
 		gbcSuperRight.anchor = GridBagConstraints.LINE_START;
 
+		// Obtains the restServiceDescription's parameters
+		Map<String, String> values = this.restServiceDescription.getParameterValues();
 		for (Entry<String, Boolean> entry : getModel().parametersForSearchType(
 				null).entrySet()) {
 			String param = entry.getKey();
+			String value = values.get(param);
 
 			JLabel label = new JLabel();
 			if ((entry.getValue())) {
@@ -205,6 +210,10 @@ public class AddToWorkflowDialog extends JDialog {
 			}
 			paramPanel.add(label, gbcLeft);
 			JTextField textField = new JTextField(10);
+			if (value != null && !value.isEmpty()) {
+				// set into the text field the param's value
+				textField.setText(value);
+			}
 			paramPanel.add(textField, gbcRight);
 			label.setLabelFor(textField);
 			fields.put(param, textField);

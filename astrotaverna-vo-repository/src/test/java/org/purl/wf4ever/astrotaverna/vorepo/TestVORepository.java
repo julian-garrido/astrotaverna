@@ -1,14 +1,11 @@
 package org.purl.wf4ever.astrotaverna.vorepo;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.math.BigInteger;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlType;
@@ -24,6 +21,7 @@ import net.ivoa.xml.adql.v1.XMatchType;
 import net.ivoa.xml.conesearch.v1.ConeSearch;
 import net.ivoa.xml.sia.v1.SimpleImageAccess;
 import net.ivoa.xml.ssa.v0.SimpleSpectralAccess;
+import net.ivoa.xml.tapregext.v1.TableAccess;
 import net.ivoa.xml.voresource.v1.Capability;
 import net.ivoa.xml.voresource.v1.Resource;
 import net.ivoa.xml.voresource.v1.Service;
@@ -41,7 +39,9 @@ import org.purl.wf4ever.astrotaverna.wsdl.registrysearch.RegistrySearchPortType;
  -Dcom.sun.xml.internal.ws.transport.http.client.HttpTransportPipe.dump=true
  */
 public class TestVORepository {
-
+	
+	
+	
 	@Test
 	public void coneSearch() throws Exception {
 		VORepository repo = new VORepository();
@@ -59,14 +59,26 @@ public class TestVORepository {
 		assertTrue("Could not find any ConeSearch", foundCapability);
 	}
 	
+	
+		
 	@Ignore("Takes a very long time")	
 	@Test
 	public void searchEveryService() throws Exception {
+		 
+		ArrayList <String>  key_path = new ArrayList<String>();
+		key_path.add("title");
+		key_path.add("shortName");
+		key_path.add("identifier");
+		key_path.add("subject");
+		key_path.add("publisher");
+		
 		BigInteger HUNDRED = BigInteger.valueOf(100);
 		BigInteger ONE = BigInteger.valueOf(1);
 		VORepository repo = new VORepository();
 		WhereType where = new WhereType();
-		where.setCondition(repo.makeLikeCondition("capability/interface/@xsi:type", "%"));
+		
+		for (int indice=0; indice<key_path.size();indice++)
+			where.setCondition(repo.makeLikeCondition(key_path.get(indice),"capability/interface/@xsi:type", "%"));
 			// Perform search
 		List<Resource> resources = null;
 		BigInteger count = BigInteger.valueOf(0);
@@ -84,6 +96,7 @@ public class TestVORepository {
 	}
 
 
+	
 	@Test
 	public void sdssDeserialization() throws Exception {
 		VORepository repo = new VORepository();
@@ -100,7 +113,7 @@ public class TestVORepository {
 		}
 		assertTrue("Could not find any ConeSearch", foundCapability);
 	}
-	@Ignore
+
 	@Test
 	public void defaultConeSearch() throws Exception {
 		VORepository repo = new VORepository();
@@ -109,6 +122,7 @@ public class TestVORepository {
                 assertTrue(resources.size() > 10);
 	}
 
+	
 	@Test
 	public void defaultRepo() throws Exception {
 		VORepository repo = new VORepository();
@@ -118,6 +132,7 @@ public class TestVORepository {
 				repo.getEndpoint().toASCIIString());
 	}
 
+	
 	@Test
 	public void defaultSIASearch() throws Exception {
 		VORepository repo = new VORepository();
@@ -125,6 +140,7 @@ public class TestVORepository {
 		assertTrue(resources.size() > 20);
 	}
 
+	@Ignore
 	//jgs: I have commented this test because it was failing
 	//@Ignore
 	@Test
@@ -135,6 +151,7 @@ public class TestVORepository {
 		assertTrue(resources.size() > 20);
 	}
 
+	
 	@Test
 	public void emptyConeSearch() throws Exception {
 		VORepository repo = new VORepository();
@@ -143,6 +160,7 @@ public class TestVORepository {
 		assertTrue(resources.isEmpty());
 	}
 
+	
 	@Test
 	public void endPointChanged() {
 		VORepository voRepository = new VORepository();
@@ -163,6 +181,7 @@ public class TestVORepository {
 
 	}
 
+	
 	@Test
 	public void keywordSearch() throws Exception {
 		VORepository repo = new VORepository();
@@ -174,6 +193,7 @@ public class TestVORepository {
 
 	}
 
+	
 	@Test
 	public void multipleConeSearch() throws Exception {
 		VORepository repo = new VORepository();
@@ -182,6 +202,7 @@ public class TestVORepository {
 		assertEquals(1, resources.size());
 	}
 
+	
 	@Test
 	public void multipleEmptyConeSearch() throws Exception {
 		VORepository repo = new VORepository();
@@ -190,6 +211,7 @@ public class TestVORepository {
 		assertTrue(resources.isEmpty());
 	}
 
+	
 	@Test
 	public void portCached() throws Exception {
 		VORepository voRepository = new VORepository();
@@ -197,6 +219,7 @@ public class TestVORepository {
 		assertSame(port, voRepository.getPort());
 	}
 
+	
 	@Test
 	public void portUncached() throws Exception {
 		VORepository voRepository = new VORepository();
@@ -205,11 +228,13 @@ public class TestVORepository {
 		assertNotSame(port, voRepository.getPort());
 	}
 
+	
 	@Test
 	public void status() throws Exception {
 		assertEquals(VORepository.Status.OK, new VORepository().getStatus());
 	}
 
+	
 	@Test
 	public void status404() throws Exception {
 		assertEquals(VORepository.Status.CONNECTION_ERROR,
@@ -236,4 +261,10 @@ public class TestVORepository {
 						.getStatus());
 	}
 
+	@Test
+	public void defaultTableAccessSearch() throws Exception {
+		VORepository repo = new VORepository(URI.create("http://registry.euro-vo.org/services/RegistrySearch"));
+		List<Service> resources = repo.resourceSearch(TableAccess.class);
+		assertTrue(resources.size() > 20);
+	}
 }

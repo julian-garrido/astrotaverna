@@ -2,15 +2,20 @@ package org.purl.wf4ever.astrotaverna.vo;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
+import org.apache.log4j.*;
+
+//import javax.jws.WebService;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
+import net.ivoa.xml.tapregext.v1.TableAccess;
 import net.ivoa.xml.vodataservice.v1.ParamHTTP;
 import net.ivoa.xml.voresource.v1.AccessURL;
 import net.ivoa.xml.voresource.v1.Capability;
@@ -23,6 +28,9 @@ import net.sf.taverna.t2.workbench.ui.workflowview.WorkflowView;
 
 import org.apache.log4j.Logger;
 import org.purl.wf4ever.astrotaverna.vorepo.VORepository.Status;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 
 public class VOServicesController {
@@ -184,6 +192,7 @@ public class VOServicesController {
 					AccessURL accessURL = http.getAccessURL().get(0);
 					serviceDescription
 							.setAccessURL(accessURL.getValue().trim());
+					addTapParameters(serviceDescription, searchType);
 					updateAccessUrl(serviceDescription, searchType);
 					break;
 				}
@@ -193,6 +202,19 @@ public class VOServicesController {
 			}
 		}
 		return serviceDescription;
+	}
+	
+	public void addTapParameters(VOServiceDescription serviceDescription, Class<? extends Capability> searchType){
+		//TODO: Add Parameters to serviceDescription from the TAP Panel
+		if (searchType == TableAccess.class){
+			HashMap<String, String> parameters = new HashMap<String, String>();
+			parameters.put("LANG", getView().TapTablePanelgetLang());
+			parameters.put("QUERY", getView().TapTablePanelgetQuery());
+			parameters.put("REQUEST", "doQuery");
+			parameters.put("SYNCHRONOUS", getView().TapTablePanelIsSynchronous());
+			parameters.put("MAXREC", getView().TapTablePanelgetMaxrec());
+			serviceDescription.setParameters(parameters);
+		}
 	}
 
 	public void addToWorkflow(VOServiceDescription serviceDescription) {

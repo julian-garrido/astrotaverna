@@ -4,7 +4,7 @@
 
 	<groupId>org.purl.wf4ever.astrotaverna</groupId>
 	<artifactId>astrotaverna</artifactId>
-	<version>1.10.01-SNAPSHOT</version>
+	<version>1.10.02-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Astro Taverna</name>
 
@@ -140,7 +140,8 @@
 		</snapshotRepository>
 	</distributionManagement>
 
-  <modules>    
+  <modules>
+  	<module>perspective-myexperiment-astropack</module>    
     <module>astrotaverna-voservices</module>
     <module>astrotaverna-vo-repository</module>
     <!-- <module>coordinatestool-activity</module>
@@ -172,6 +173,7 @@
   	<connection>scm:git:git://github.com/julian-garrido/astrotaverna.git</connection>
   	<!-- <developerConnection>scm:git:git@github.com:wf4ever/astrotaverna.git</developerConnection> -->
   	<developerConnection>scm:git:git@github.com:julian-garrido/astrotaverna.git</developerConnection>
+    <tag>HEAD</tag>
   </scm>
   <issueManagement>
   	<system>github</system>

@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,16 +17,29 @@ import net.ivoa.wsdl.registrysearch.v1.ResolveResponse;
 import net.ivoa.xml.adql.v1.AtomType;
 import net.ivoa.xml.adql.v1.ClosedSearchType;
 import net.ivoa.xml.adql.v1.ColumnReferenceType;
+import net.ivoa.xml.adql.v1.ComparisonPredType;
 import net.ivoa.xml.adql.v1.IntersectionSearchType;
 import net.ivoa.xml.adql.v1.LikePredType;
+import net.ivoa.xml.adql.v1.LiteralType;
 import net.ivoa.xml.adql.v1.SearchType;
 import net.ivoa.xml.adql.v1.StringType;
 import net.ivoa.xml.adql.v1.UnionSearchType;
 import net.ivoa.xml.adql.v1.WhereType;
+import net.ivoa.xml.conesearch.v1.ConeSearch;
 import net.ivoa.xml.registryinterface.v1.VOResources;
+import net.ivoa.xml.sia.v1.SimpleImageAccess;
+import net.ivoa.xml.ssa.v0.SimpleSpectralAccess;
+import net.ivoa.xml.tapregext.v1.TableAccess;
 import net.ivoa.xml.voresource.v1.Capability;
 import net.ivoa.xml.voresource.v1.Resource;
 import net.ivoa.xml.voresource.v1.Service;
+
+import org.apache.log4j.*;
+
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.namespace.QName;
+import javax.xml.ws.BindingProvider;
+import javax.xml.ws.WebServiceException;
 
 import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.apache.log4j.Logger;
@@ -38,6 +52,16 @@ public class VORepository {
 	private static final String DUMMY_SEARCH_WSDL = "/wsdl/dummySearch.wsdl";
 
 	private static final String CAPABILITY_XSI_TYPE = "capability/@xsi:type";
+	
+	private static final String CAPABILITY_STANDAR_ID_TYPE = "capability/@standardID";
+	
+	private static final String ADDRESS_CONECTION_SEARCH_TAB = "ivo://ivoa.net/std/TAP";
+	
+	private static final String ADDRESS_CONECTION_SEARCH_SIA = "ivo://ivoa.net/std/SIA";
+	
+	private static final String ADDRESS_CONECTION_SEARCH_CONE = "ivo://ivoa.net/std/ConeSearch";
+	
+	private static final String ADDRESS_CONECTION_SEARCH_SSA = "ivo://ivoa.net/std/SSA";
 
 	private static Logger logger = Logger.getLogger(VORepository.class);
 
@@ -49,10 +73,15 @@ public class VORepository {
 
 	// We'll do similar fields as Topcat - see
 	// http://www.ivoa.net/internal/IVOA/InterOpMay2010Reg/reg.pdf
+	//protected List<String> KEYWORD_XPATHS = Arrays.asList("title", "shortName",
+		//	"identifier", "content/subject", "content/description",
+		//	"content/type");
+	protected List<String> KEYWORD_NAMEPATH = Arrays.asList("title", "shortName",
+			"identifier", "subject", "publisher");
+	
 	protected List<String> KEYWORD_XPATHS = Arrays.asList("title", "shortName",
-			"identifier", "content/subject", "content/description",
-			"content/type");
-
+				"identifier", "content/subject", "curation/publisher");
+	
 	protected final static QName REGISTRYSEARCHSERVICE_QNAME = new QName(
 			"http://purl.org/wf4ever/astrotaverna/wsdl/RegistrySearch",
 			"RegistrySearchService");
@@ -152,7 +181,7 @@ public class VORepository {
 	}
 
 	public List<Service> resourceSearch(
-			Class<? extends Capability> capabilityType, String... keywords)
+			Class<? extends Capability> capabilityType,  String... keywords)
 			throws ErrorResp {
 		WhereType where = new WhereType();
 
@@ -162,23 +191,42 @@ public class VORepository {
 		// TODO: namespaced xsi:type lookup without using % trick?
 		// Use capability/@standardID == "ivo://ivoa.net/std/ConeSearch" etc
 		// instead?
-
+		logger.info("Literal xsiTypeValueLiteral: " + xsiTypeValueLiteral.toString());
+	
 		List<SearchType> and = new ArrayList<SearchType>();
-
-		and.add(makeLikeCondition(CAPABILITY_XSI_TYPE, xsiTypeValueLiteral));
+		//and.add(makeComparisonCondition(CAPABILITY_STANDAR_ID_TYPE,ADDRESS_CONECTION_SEARCH_TAB ));
+		if (xsiTypeValueLiteral.compareTo("%TableAccess")==0)
+			and.add(makeComparisonCondition(CAPABILITY_STANDAR_ID_TYPE,ADDRESS_CONECTION_SEARCH_TAB ));
+		if ( xsiTypeValueLiteral.compareTo("%ConeSearch")==0)
+			and.add(makeComparisonCondition(CAPABILITY_STANDAR_ID_TYPE,ADDRESS_CONECTION_SEARCH_CONE ));
+		if ( xsiTypeValueLiteral.compareTo("%SimpleImageAccess")==0)
+			and.add(makeComparisonCondition(CAPABILITY_STANDAR_ID_TYPE,ADDRESS_CONECTION_SEARCH_SIA ));
+		if ( xsiTypeValueLiteral.compareTo("%SimpleSpectralAccess")==0)
+			and.add(makeComparisonCondition(CAPABILITY_STANDAR_ID_TYPE,ADDRESS_CONECTION_SEARCH_SSA ));
+		//and.add(makeLikeCondition(CAPABILITY_XSI_TYPE, xsiTypeValueLiteral));*/
 
 		// This does not work for some reason
 		// and.add(makeLikeCondition("capability/interface/@xsi:type",
 		// "%HTTP%"));
-
+// TODO:
+		
+		String name;
+		int index;
 		for (String kw : keywords) {
 			List<SearchType> or = new ArrayList<SearchType>();
-			for (String xpath : KEYWORD_XPATHS) {
-				// NOTE: If keywordXpaths.size() == 1 - don't use the
-				// intermediary or
-				or.add(makeLikeCondition(xpath, "%" + kw + "%"));
-			}
-			and.add(makeConditionSearchType(UnionSearchType.class, or));
+				if (kw.length()>0)
+				{
+					index = 0;
+					for (String xpath : KEYWORD_XPATHS) {
+						// NOTE: If keywordXpaths.size() == 1 - don't use the
+						// intermediary or
+						name = KEYWORD_NAMEPATH.get(index).toString();
+						or.add(makeLikeCondition(name, xpath, "%" + kw + "%"));
+						index ++;
+					}
+				}
+			if (!or.isEmpty())
+				and.add(makeConditionSearchType(UnionSearchType.class, or));
 		}
 		where.setCondition(makeConditionSearchType(
 				IntersectionSearchType.class, and));
@@ -200,10 +248,16 @@ public class VORepository {
 			}
 			Service ser = (Service) res;
 			for (Capability c : ser.getCapability()) {
-				if (capabilityType.isInstance(c)) {
-					services.add(ser);
-					logger.debug("Found " + ser);
-					break;
+				try{
+									
+					if (capabilityType.isInstance(c) || (capabilityType.getName().contains("TableAccess") && c.getStandardID().contains("TAP"))) {
+						services.add(ser);
+						logger.debug("Found " + ser);
+						break;
+					}
+				}catch(Exception ex){
+					logger.info("Error al obtener los capability");
+					
 				}
 			}
 			logger.debug("Capability " + capabilityType.getSimpleName()
@@ -241,11 +295,11 @@ public class VORepository {
 		return closed;
 	}
 
-	protected LikePredType makeLikeCondition(String xpath, String literal) {
+	protected LikePredType makeLikeCondition(String name, String xpath, String literal) {
 		LikePredType like = new LikePredType();
 		ColumnReferenceType typeArg = new ColumnReferenceType();
 		// TODO: Is this temp name really needed?
-		typeArg.setName("arg-" + UUID.randomUUID().toString());
+		typeArg.setName(name);
 		typeArg.setTable("");
 		typeArg.setXpathName(xpath);
 		like.setArg(typeArg);
@@ -256,5 +310,54 @@ public class VORepository {
 		like.setPattern(pattern);
 		return like;
 	}
+	
+	protected ComparisonPredType makeComparisonCondition(String xpath, String literal ){
+		//ClosedSearchType closed = new ClosedSearchType();
+		ComparisonPredType comparison = new ComparisonPredType();
+		comparison.setComparison("=");
+		
+		
+		ColumnReferenceType typeArg = new ColumnReferenceType();
+		typeArg.setTable("");
+		typeArg.setName("@standardID");
+		typeArg.setXpathName(xpath);
+		
+		AtomType atomType = new AtomType();
+		StringType value = new StringType();
+		value.setValue(literal);
+		atomType.setLiteral(value);
+		
+		comparison.getArg().add(typeArg);
+		comparison.getArg().add(atomType);
+		
+		//closed.setCondition(comparison);
+		
+		return comparison;
+	}
+	
+	protected ComparisonPredType makeComparisonSearchCondition(String column, String xpath, String literal ){
+		//ClosedSearchType closed = new ClosedSearchType();
+		ComparisonPredType comparison = new ComparisonPredType();
+		comparison.setComparison("=");
+		
+		
+		ColumnReferenceType typeArg = new ColumnReferenceType();
+		typeArg.setTable("");
+		typeArg.setName("@standardID");
+		typeArg.setXpathName(xpath);
+		
+		AtomType atomType = new AtomType();
+		StringType value = new StringType();
+		value.setValue(literal);
+		atomType.setLiteral(value);
+		
+		comparison.getArg().add(typeArg);
+		comparison.getArg().add(atomType);
+		
+		//closed.setCondition(comparison);
+		
+		return comparison;
+	}
+	
 
 }

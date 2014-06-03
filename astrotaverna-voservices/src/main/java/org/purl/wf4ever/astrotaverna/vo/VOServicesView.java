@@ -1,9 +1,13 @@
 package org.purl.wf4ever.astrotaverna.vo;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URI;
@@ -11,15 +15,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 
+import org.apache.log4j.*;
+
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
@@ -33,11 +41,22 @@ import net.ivoa.xml.ssa.v0.SimpleSpectralAccess;
 import net.ivoa.xml.voresource.v1.Capability;
 import net.ivoa.xml.voresource.v1.Service;
 import net.sf.taverna.t2.workbench.ui.zaria.UIComponentSPI;
+import net.ivoa.xml.slap.v0.SimpleLineAccess;
+import net.ivoa.xml.ssa.v0.SimpleSpectralAccess;
+import net.ivoa.xml.sia.v1.SimpleImageAccess;
+import net.ivoa.xml.tapregext.v1.TableAccess;
+import net.ivoa.xml.voresource.v1.Interface;
+import net.ivoa.xml.voresource.v1.AccessURL;
+import net.ivoa.xml.vodataservice.v1.ParamHTTP;
 
 import org.apache.log4j.Logger;
 import org.purl.wf4ever.astrotaverna.vo.utils.ModelIterator;
 import org.purl.wf4ever.astrotaverna.vorepo.VORepository.Status;
 
+import uk.ac.starlink.vo.TableSetPanel;
+import uk.ac.starlink.vo.TapTableLoadDialog;
+import uk.ac.starlink.vo.TableMeta;
+import uk.ac.starlink.vo.TapQueryPanel;
 
 public class VOServicesView extends JPanel implements UIComponentSPI {
 	public class RegistryChange implements ActionListener {
@@ -82,6 +101,7 @@ public class VOServicesView extends JPanel implements UIComponentSPI {
 		public void actionPerformed(ActionEvent e) {
 			String search = keywords.getText();
 			getController().search(searchType, search);
+			tapSearchTab.setVisible(Boolean.FALSE);
 
 		}
 	}
@@ -103,7 +123,16 @@ public class VOServicesView extends JPanel implements UIComponentSPI {
 			this.searchType = SimpleSpectralAccess.class;
 		}
 	}
-	
+
+	public class TAPSearchAction extends SearchAction {
+		private static final long serialVersionUID = 1L;
+
+		public TAPSearchAction() {
+			super("TAP Search");
+			this.searchType = TableAccess.class;
+		}
+	}
+
 	public class SLASearchAction extends SearchAction {
 		private static final long serialVersionUID = 1L;
 
@@ -117,22 +146,29 @@ public class VOServicesView extends JPanel implements UIComponentSPI {
 	private static final int RESOURCE_COLUMN = 0;
 	private static final long serialVersionUID = 1L;
 	// Actions
-	private ConeSearchAction coneSearch = new ConeSearchAction();
+	
 	private VOServicesController controller;
 	private JTextField keywords;
 	private VOServicesModel model;
-
+	private JTextField url_query;
+	private JSplitPane ventanaCompleta;
 	private JComboBox registry;
 	private JSplitPane results;
 	private JPanel resultsDetails;
-
+	private JPanel tapSearchTab;
+	private JPanel tapQuery;
+	private JPanel tapTables;
+	private JPanel contenedorPrincipal;
+	
 	private JTable resultsTable;
 
 	private DefaultTableModel resultsTableModel;
 
 	private SIASearchAction siaSearchAction = new SIASearchAction();
-//	private SLASearchAction slaSearchAction = new SLASearchAction();
+	private ConeSearchAction coneSearch = new ConeSearchAction();
+	// private SLASearchAction slaSearchAction = new SLASearchAction();
 	private SSASearchAction ssaSearchAction = new SSASearchAction();
+	private TAPSearchAction tapSearchAction = new TAPSearchAction();
 
 	// SWing stuff
 	private JLabel status;
@@ -187,7 +223,7 @@ public class VOServicesView extends JPanel implements UIComponentSPI {
 		if (row < 0) {
 			return null;
 		}
-		row = resultsTable.convertRowIndexToModel(row);		
+		row = resultsTable.convertRowIndexToModel(row);
 		return ((Service) resultsTableModel.getValueAt(row, RESOURCE_COLUMN));
 	}
 
@@ -197,26 +233,103 @@ public class VOServicesView extends JPanel implements UIComponentSPI {
 
 	protected void initialize() {
 		removeAll();
-		setLayout(new GridBagLayout());
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 0;
+		
+		JPanel panelSuperior = new JPanel( new BorderLayout());
+		JPanel panelInferior = new JPanel(new BorderLayout());
+				
+		setLayout(new BorderLayout());
+		
+//		GridBagConstraints gbc = new GridBagConstraints();
+//		gbc.gridx = 0;
+//		gbc.gridy = 0;
+//
+//		gbc.gridwidth = 3;
+//		gbc.anchor = GridBagConstraints.FIRST_LINE_START;
+		panelSuperior.add(makeSearchBox(), BorderLayout.NORTH);
+//		gbc.weightx = 1.0;
+//		gbc.weighty = 0.0;
+//		gbc.fill = GridBagConstraints.BOTH;
+//
+//		gbc.weighty = 1.0;
+//		gbc.gridx = 0;
+//		gbc.gridy = 1;
+//		gbc.gridwidth = 2;
+		panelSuperior.add(makeResults(),BorderLayout.CENTER );
 
-		add(makeSearchBox(), gbc);
-		gbc.weightx = 1.0;
-		gbc.weighty = 0.0;
-		gbc.gridx = 1;
-		gbc.fill = GridBagConstraints.BOTH;
-		add(new JPanel(), gbc);// filler
-
-		gbc.weighty = 1.0;
-		gbc.gridx = 0;
-		gbc.gridy = 1;
-		gbc.gridwidth = 2;
-		add(makeResults(), gbc);
+//		gbc.gridx = 2;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.gridwidth = 1;
+//		gbc.weightx = 0.66;
+//		gbc.weighty = 1.0;
+//
+//		gbc.gridx = 0;
+//		gbc.gridy = 2;
+		panelInferior.add(makeTapSearchTab(),BorderLayout.CENTER);
+		tapSearchTab.setVisible(Boolean.FALSE);
+				
 		getController().checkEndpoint();
 		updateDetails();
 		updateServices();
+		
+		JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT,panelSuperior,panelInferior);
+		split.setOneTouchExpandable(true);
+		split.setDividerLocation(0.50);
+		//split.setLayout(new GridBagLayout());
+		this.add(split, BorderLayout.CENTER);
+		
+	}
+
+	protected Component makeTapSearchTab() {
+		/* Prepare a tabbed panel to contain the components. */
+		tapSearchTab = new JPanel(new BorderLayout());
+		
+		//tapSearchTab.set
+		tapSearchTab.add(makeTapSearch(), BorderLayout.CENTER);
+		
+        return tapSearchTab;
+    }
+	// TODO:
+	
+	protected Component makeTapSearch() {
+		
+		contenedorPrincipal = new JPanel ( new BorderLayout());
+		tapTables = new JPanel(new BorderLayout());
+		tapQuery = new JPanel(new GridBagLayout());
+		
+		GridBagConstraints gbcUp = new GridBagConstraints();
+		GridBagConstraints gbcDown = new GridBagConstraints();
+		gbcUp.gridx = 0;
+		gbcUp.gridy = 0;
+		gbcUp.anchor = GridBagConstraints.CENTER;
+		gbcUp.fill = GridBagConstraints.BOTH;
+		tapQuery.add(new JLabel("TAP QUERY:"), gbcUp);
+
+		gbcDown.anchor = GridBagConstraints.WEST;
+		gbcDown.fill = GridBagConstraints.HORIZONTAL;
+		gbcDown.gridx = 1;
+		gbcDown.gridy = 0;
+		gbcDown.weightx = 0.5;
+		gbcDown.weighty = 1.0;
+		tapQuery.add(new JTextField(), gbcDown);
+
+		gbcDown.anchor = GridBagConstraints.SOUTH;
+		gbcDown.fill = GridBagConstraints.RELATIVE;
+		gbcDown.gridx = 0;
+		gbcDown.gridy = 3;
+		gbcDown.weightx = 0.0;
+		gbcDown.weighty = 1.0;
+
+		contenedorPrincipal.add(tapQuery,BorderLayout.NORTH);
+		contenedorPrincipal.add(tapTables,BorderLayout.CENTER);
+		return  contenedorPrincipal;
+	}
+	
+	protected Component makeTapTables() {
+		// TODO: Aqui insertar los componentes necesarios para mostrar las
+		// tablas y sus columnas
+		tapTables = new JPanel(new BorderLayout());
+
+		return tapTables;
 	}
 
 	protected Component makeResults() {
@@ -239,6 +352,7 @@ public class VOServicesView extends JPanel implements UIComponentSPI {
 	}
 
 	protected Component makeResultsDetails() {
+		JButton buttonAddWorkFlow;
 		resultsDetails = new JPanel(new GridBagLayout());
 		resultsDetails.removeAll();
 
@@ -256,7 +370,10 @@ public class VOServicesView extends JPanel implements UIComponentSPI {
 		gbc.weighty = 0.0;
 		JPanel buttonPanel = new JPanel();
 		addToWorkflow = new AddToWorkflow();
-		buttonPanel.add(new JButton(addToWorkflow), gbc);
+		buttonAddWorkFlow = new JButton(addToWorkflow);
+		buttonPanel.add(buttonAddWorkFlow, gbc);
+		
+		
 		resultsDetails.add(buttonPanel, gbc);
 
 		// gbc.weighty = 0.1;
@@ -285,12 +402,31 @@ public class VOServicesView extends JPanel implements UIComponentSPI {
 
 		resultsTable.getSelectionModel().addListSelectionListener(
 				new ListSelectionListener() {
+					
+					
 					@Override
 					public void valueChanged(ListSelectionEvent e) {
-						if (e.getValueIsAdjusting()) {
-							return;
+						
+						Service tableSelection;
+						resultsTable.revalidate();
+						resultsTable.repaint();
+						tapTables.removeAll(); 
+						tableSelection = getTableSelection();
+						// TODO:
+						if (((JTextField) tapQuery.getComponent(1)).getText() != null) {
+							AstroTapTableLoadDialog astroTapTableLoadDialog = new AstroTapTableLoadDialog();
+							String service_url = ((JTextField) tapQuery.getComponent(1))
+									.getText();
+							// Internamente se hace una llamada asincrona, así pues será
+							// el resultado de la llamada
+							// La que dibuje las tablas en una lista
+							astroTapTableLoadDialog.setSelectedService(service_url,
+									tapTables);
+							//tapTables.revalidate();
+							//tapTables.repaint();
 						}
-						Service tableSelection = getTableSelection();
+						tapTables.revalidate();
+						tapTables.repaint();
 						getController().selectService(tableSelection);
 					}
 				});
@@ -322,7 +458,7 @@ public class VOServicesView extends JPanel implements UIComponentSPI {
 
 		searchBox.add(new JLabel("Keywords:"), gbcLeft);
 		keywords = new JTextField(40);
-		keywords.setAction(coneSearch);
+		keywords.setAction(null);
 		searchBox.add(keywords, gbcMiddle);
 
 		gbcRight.gridx = 1;
@@ -353,8 +489,9 @@ public class VOServicesView extends JPanel implements UIComponentSPI {
 		searchButtons.add(new JButton(coneSearch));
 		searchButtons.add(new JButton(siaSearchAction));
 		// Disabled as it generally gives 0 results
-		//searchButtons.add(new JButton(slaSearchAction));
+		// searchButtons.add(new JButton(slaSearchAction));
 		searchButtons.add(new JButton(ssaSearchAction));
+		searchButtons.add(new JButton(tapSearchAction));
 		return searchButtons;
 	}
 
@@ -418,6 +555,7 @@ public class VOServicesView extends JPanel implements UIComponentSPI {
 		status.setText(String.format(
 				"<html><body>Searching for %s: <b>%s</b> ...</body></html>",
 				searchType.getSimpleName(), search));
+		
 	}
 
 	protected void updateDetails() {
@@ -426,6 +564,31 @@ public class VOServicesView extends JPanel implements UIComponentSPI {
 		if (service == null) {
 			addToWorkflow.setEnabled(false);
 			return;
+		} else {
+			addToWorkflow.setEnabled(true);
+			Boolean visible = false;
+			for (Capability c : service.getCapability()) {
+				if (c instanceof TableAccess || c.getStandardID().contains("TAP")) {
+					tapSearchTab.setVisible(Boolean.TRUE);
+					// Se obtiene la url del dato del servicio
+					// Y se coloca en el input de query
+					// Para que sea ejecutada
+					for (Interface i : c.getInterface()) {
+						if (!(i instanceof ParamHTTP)) {
+							continue;
+							// TODO: Handle WebService interface?
+						}
+						for (AccessURL accessURL : i.getAccessURL()) {
+							((JTextField) tapQuery.getComponent(1))
+									.setText(accessURL.getValue().trim());
+						}
+					}
+					visible = true;
+					break;
+				}
+			}
+			if (!visible)
+				tapSearchTab.setVisible(Boolean.FALSE);
 		}
 		addToWorkflow.setEnabled(true);
 	}
@@ -478,6 +641,32 @@ public class VOServicesView extends JPanel implements UIComponentSPI {
 
 	public void statusEndpointChecking() {
 		status.setText("Checking endpoint...");
+	}
+	
+	public JPanel getTablePanel(){
+		return tapTables;
+	}
+	
+	public String TapTablePanelIsSynchronous(){
+		TapQueryPanel tapQueryPanel = (TapQueryPanel) tapTables.getComponent(0);
+		return String.valueOf(tapQueryPanel.isSynchronous());
+	}
+	
+	public String TapTablePanelgetQuery(){
+		TapQueryPanel tapQueryPanel = (TapQueryPanel) tapTables.getComponent(0);
+		return tapQueryPanel.getAdql();
+	}
+	
+	public String TapTablePanelgetMaxrec(){
+		TapQueryPanel tapQueryPanel = (TapQueryPanel) tapTables.getComponent(0);
+		return String
+				.valueOf(tapQueryPanel.getCapabilityPanel().getMaxrec() == -1 ? 0
+						: tapQueryPanel.getCapabilityPanel().getMaxrec());
+	}
+	
+	public String TapTablePanelgetLang(){
+		TapQueryPanel tapQueryPanel = (TapQueryPanel) tapTables.getComponent(0);
+		return tapQueryPanel.getCapabilityPanel().getQueryLanguage();
 	}
 
 }

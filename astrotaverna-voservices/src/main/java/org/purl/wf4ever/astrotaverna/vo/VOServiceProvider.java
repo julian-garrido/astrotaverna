@@ -17,6 +17,11 @@ import net.sf.taverna.t2.servicedescriptions.ConfigurableServiceProvider;
 import net.sf.taverna.t2.servicedescriptions.ServiceDescription;
 import net.sf.taverna.t2.servicedescriptions.ServiceDescriptionProvider;
 
+import org.purl.wf4ever.astrotaverna.vorepo.VORepository;
+import org.purl.wf4ever.astrotaverna.wsdl.registrysearch.ErrorResp;
+
+
+
 public class VOServiceProvider extends
 		AbstractConfigurableServiceProvider<VOServiceProviderConfig> implements
 		ServiceDescriptionProvider,
