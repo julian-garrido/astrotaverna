@@ -37,7 +37,8 @@
       <version>1.08.07</version>
       <version>1.09.01</version>
       <version>1.10.01-SNAPSHOT</version>
+      <version>1.10.02-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20140603065103</lastUpdated>
+    <lastUpdated>20140603081047</lastUpdated>
   </versioning>
 </metadata>
